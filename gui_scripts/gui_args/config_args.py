@@ -1,3 +1,5 @@
+from enum import Enum
+
 SETTINGS_CONFIG_DICT = [
     {
         "category": "General",
@@ -102,3 +104,8 @@ SETTINGS_CONFIG_DICT = [
         ]
     }
 ]
+class AlertCode(Enum):
+    INFORMATION = 0
+    CRITICAL = 1
+    QUESTION = 2
+    WARNING = 3
