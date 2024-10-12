@@ -27,11 +27,12 @@ def assign_link_lengths(network_fp: str, node_pairs_dict: dict, constant_weight:
 
     return response_dict
 
+
 def assign_core_nodes(core_nodes_fp: str):
     """
     List a core nodes of network topology. 
 
-    :param core_nodes_fp: File path that contains core nodes  information.
+    :param core_nodes_fp: File path that contains core node information.
     :return: A list of core nodes.
     :rtype: list
     """
@@ -53,7 +54,7 @@ def create_network(net_name: str, base_fp: str = None, const_weight: bool = Fals
     :return: The network spectrum database.
     :rtype: dict
     """
-    core_nodes= []
+    core_nodes = []
     if base_fp is None:
         base_fp = 'data/raw'
     else:
