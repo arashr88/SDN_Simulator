@@ -69,7 +69,7 @@ def create_network(net_name: str, base_fp: str = None, const_weight: bool = Fals
         network_fp = os.path.join(base_fp, 'USB6014.txt')
         if not is_only_core_node:
             core_nodes_fp = os.path.join(base_fp, 'USB6014_core_nodes.txt')
-            core_nodes = assign_core_nodes(core_nodes_fp=core_nodes_fp)  
+            core_nodes = assign_core_nodes(core_nodes_fp=core_nodes_fp)
     else:
         raise NotImplementedError(f"Unknown network name. Expected USNet, NSFNet, or Pan-European. Got: {net_name}")
 
