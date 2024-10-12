@@ -104,6 +104,13 @@ SETTINGS_CONFIG_DICT = [
         ]
     }
 ]
+
+# TODO: update documentation to reflect this.
+GUI_DEFAULT_SETTINGS = {
+    'supported_networks': ['USNet', 'NSFNet', 'Pan-European', 'USbackbode60']
+}
+
+
 class AlertCode(Enum):
     INFORMATION = 0
     CRITICAL = 1
