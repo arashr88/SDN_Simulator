@@ -12,7 +12,7 @@ class HoverLabel(qtw.QLabel):
     hover_changed = qtc.pyqtSignal(bool)
 
     def __init__(self, parent=None):
-        super(HoverLabel, self).__init__(parent)
+        super().__init__(parent)
         self.setMouseTracking(True)
         self.setToolTip("This is the data displayed on hover.")
         self.setSizePolicy(qtw.QSizePolicy.Minimum, qtw.QSizePolicy.Minimum)
@@ -40,7 +40,7 @@ class HoverLabel(qtw.QLabel):
         """
         self.setText(self.hoverText)
         self.hover_changed.emit(True)
-        super(HoverLabel, self).enterEvent(event)
+        super().enterEvent(event)
 
     def leave_event(self, event):
         """
@@ -50,7 +50,7 @@ class HoverLabel(qtw.QLabel):
         """
         self.setText(self.normalText)
         self.hover_changed.emit(False)
-        super(HoverLabel, self).leaveEvent(event)
+        super().leaveEvent(event)
 
     def update_tool_tip(self, new_data):
         """
