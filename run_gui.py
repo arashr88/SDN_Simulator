@@ -13,7 +13,7 @@ from gui_scripts.gui_helpers.general_helpers import DirectoryTreeView
 from gui_scripts.gui_args.style_args import STYLE_SHEET
 
 
-class MainWindow(QtWidgets.QMainWindow):
+class MainWindow(qtw.QMainWindow):
     """
     The main window class, central point that controls all GUI functionality and actions.
     """
@@ -27,7 +27,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ac_help_obj = ActionHelpers()
         self.button_help_obj = ButtonHelpers()
 
-        self.progress_bar = QtWidgets.QProgressBar()
+        self.progress_bar = qtw.QProgressBar()
         self.simulation_thread = None
         self.network_option = ''
 
@@ -53,8 +53,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.highlighter = None
 
         # Set the project directory as the root for the file model
-        self.project_directory = QtCore.QDir.currentPath()
-        self.file_model = QFileSystemModel()
+        self.project_directory = qtc.QDir.currentPath()
+        self.file_model = qtw.QFileSystemModel()
         self.file_model.setRootPath(self.project_directory)
 
         self.init_ui()
@@ -67,22 +67,22 @@ class MainWindow(QtWidgets.QMainWindow):
         """
         Initialize the main user-interface.
         """
-        self.main_widget = QtWidgets.QWidget()
+        self.main_widget = qtw.QWidget()
         self.setCentralWidget(self.main_widget)
 
-        self.main_layout = QtWidgets.QVBoxLayout(self.main_widget)
+        self.main_layout = qtw.QVBoxLayout(self.main_widget)
         self.main_layout.setContentsMargins(0, 0, 0, 0)  # Remove any margins
         self.main_layout.setSpacing(0)  # Remove any spacing between widgets
 
         # Splitter for directory tree and tab widget
-        self.horizontal_splitter = QtWidgets.QSplitter(QtCore.Qt.Horizontal)
+        self.horizontal_splitter = qtw.QSplitter(qtc.Qt.Horizontal)
 
         # Directory tree view
-        self.first_info_pane = QtWidgets.QWidget()
-        self.first_info_layout = QtWidgets.QVBoxLayout(self.first_info_pane)
+        self.first_info_pane = qtw.QWidget()
+        self.first_info_layout = qtw.QVBoxLayout(self.first_info_pane)
 
         self.directory_tree_obj = DirectoryTreeView(self.file_model)
-        self.directory_tree_obj.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.directory_tree_obj.setContextMenuPolicy(qtc.Qt.CustomContextMenu)
         self.directory_tree_obj.customContextMenuRequested.connect(
             self.directory_tree_obj.handle_context_menu)
         # self.directory_tree.setModel(self.file_model)
@@ -104,10 +104,10 @@ class MainWindow(QtWidgets.QMainWindow):
         self.horizontal_splitter.addWidget(self.first_info_pane)
 
         # Tab widget for file editor and topology
-        self.tab_widget = QTabWidget()
+        self.tab_widget = qtw.QTabWidget()
 
         # File editor tab
-        self.file_editor = QtWidgets.QTextEdit()
+        self.file_editor = qtw.QTextEdit()
         self.file_editor.setObjectName("src_code_editor")
         self.file_editor.setStyleSheet("font-size: 12pt;")
         self.tab_widget.addTab(self.file_editor, "File Editor")
@@ -116,23 +116,24 @@ class MainWindow(QtWidgets.QMainWindow):
         self.highlighter = PythonHighlighter(self.file_editor.document())
 
         # Topology view tab
-        self.mw_topology_view_area = QtWidgets.QScrollArea()
-        init_topology_data = QtWidgets.QLabel("Nothing to display", self.mw_topology_view_area)
+        self.mw_topology_view_area = qtw.QScrollArea()
+        init_topology_data = qtw.QLabel("Nothing to display", self.mw_topology_view_area)
         init_topology_data.setStyleSheet("font-size: 11pt")
-        init_topology_data.setAlignment(QtCore.Qt.AlignCenter)
+        init_topology_data.setAlignment(qtc.Qt.AlignCenter)
         self.mw_topology_view_area.setWidget(init_topology_data)
-        self.mw_topology_view_area.setAlignment(QtCore.Qt.AlignCenter)
+        self.mw_topology_view_area.setAlignment(qtc.Qt.AlignCenter)
         self.tab_widget.setStyleSheet("font-size: 12pt")
         self.tab_widget.addTab(self.mw_topology_view_area, "Topology View")
 
         self.horizontal_splitter.addWidget(self.tab_widget)
 
         # Vertical splitter for the horizontal splitter and the bottom pane
-        self.vertical_splitter = QtWidgets.QSplitter(QtCore.Qt.Vertical)
+        self.vertical_splitter = qtw.QSplitter(qtc.Qt.Vertical)
         self.vertical_splitter.addWidget(self.horizontal_splitter)
 
         # Bottom pane for simulation output
-        self.bottom_pane = QPlainTextEdit(self)
+        self.bottom_pane = qtw.QPlainTextEdit(self)
+        self.bottom_pane.setCursor(qtc.Qt.ArrowCursor)
         self.bottom_pane.setReadOnly(True)
         self.bottom_pane.setMinimumHeight(150)
         self.vertical_splitter.addWidget(self.bottom_pane)
@@ -146,9 +147,9 @@ class MainWindow(QtWidgets.QMainWindow):
         :param index: Index of file path displayed in the tree.
         """
         file_path = self.file_model.filePath(index)
-        if QtCore.QFileInfo(file_path).isFile():
+        if qtc.QFileInfo(file_path).isFile():
             file_index = self.tab_widget.indexOf(self.file_editor)
-            self.tab_widget.setTabText(file_index, QtCore.QFileInfo(file_path).fileName())
+            self.tab_widget.setTabText(file_index, qtc.QFileInfo(file_path).fileName())
             with open(file_path, 'r', encoding='utf-8') as file:
                 content = file.read()
                 self.file_editor.setPlainText(content)
@@ -194,9 +195,9 @@ class MainWindow(QtWidgets.QMainWindow):
         """
         self.tool_bar = self.addToolBar('Main Toolbar')
         self.tool_bar.setMovable(False)
-        self.tool_bar.setIconSize(QtCore.QSize(15, 15))
+        self.tool_bar.setIconSize(qtc.QSize(15, 15))
 
-        save_action = QtWidgets.QAction('Save', self)
+        save_action = qtw.QAction('Save', self)
         save_action.triggered.connect(self.save_file)
         self.tool_bar.addAction(save_action)
 
@@ -231,7 +232,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
 
 if __name__ == '__main__':
-    app = QtWidgets.QApplication(sys.argv)
+    app = qtw.QApplication(sys.argv)
     window = MainWindow()
     window.show()
     sys.exit(app.exec_())
