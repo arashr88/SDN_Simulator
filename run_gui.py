@@ -5,8 +5,7 @@ import sys
 from PyQt5 import QtWidgets as qtw, QtCore as qtc
 
 # Assuming these imports are available from your project
-from gui_scripts.gui_helpers.menu_helpers import MenuHelpers
-from gui_scripts.gui_helpers.action_helpers import ActionHelpers
+from gui_scripts.gui_helpers.menu_helpers import MenuBar
 from gui_scripts.gui_helpers.button_helpers import ButtonHelpers
 from gui_scripts.gui_helpers.highlight_helpers import PythonHighlighter
 from gui_scripts.gui_helpers.general_helpers import DirectoryTreeView
@@ -168,26 +167,10 @@ class MainWindow(qtw.QMainWindow):
         """
         Initialize the menu bar.
         """
-        self.menu_bar = self.menuBar()
-        self.menu_help_obj.menu_bar_obj = self.menu_bar
-        self.menu_help_obj.create_file_menu()
-        self.menu_help_obj.create_edit_menu()
-        self.menu_help_obj.create_help_menu()
-
-        self.ac_help_obj.mw_topology_view_area = self.mw_topology_view_area
-        self.ac_help_obj.menu_help_obj = self.menu_help_obj
-        self.ac_help_obj.menu_bar_obj = self.menu_bar
-
-        self.ac_help_obj.create_topology_action()
-        self.ac_help_obj.create_save_action()
-
-        # Create exit action and add it to the File menu
-        exit_action = QtWidgets.QAction('Exit', self)
-        exit_action.triggered.connect(self.close)
-        self.menu_help_obj.file_menu_obj.addAction(exit_action)
-
-        self.ac_help_obj.create_settings_action()
-        self.ac_help_obj.create_about_action()
+        self.menu_bar = MenuBar(self)
+        self.menu_bar.app_close_signal_relay.connect(self.close)
+        self.setMenuBar(self.menu_bar)
+        self.menu_bar.setNativeMenuBar(False)
 
     def init_tool_bar(self):
         """
