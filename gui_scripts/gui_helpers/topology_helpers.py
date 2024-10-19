@@ -36,7 +36,7 @@ class TopologyCanvas(FigureCanvas):
     def __init__(self, parent=None, width=10, height=8, dpi=100):
         fig = Figure(figsize=(width, height), dpi=dpi)
         self.axes = fig.add_subplot(111)
-        super(TopologyCanvas, self).__init__(fig)  # pylint: disable=super-with-arguments
+        super().__init__(fig)  # pylint: disable=super-with-arguments
         self.setParent(parent)
 
         self.G = None  # pylint: disable=invalid-name
