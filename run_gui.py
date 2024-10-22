@@ -22,8 +22,6 @@ class MainWindow(qtw.QMainWindow):
         self.setWindowTitle("SD-EON Simulator")
         self.resize(1280, 720)
 
-        self.menu_help_obj = MenuHelpers()
-        self.ac_help_obj = ActionHelpers()
         self.button_help_obj = ButtonHelpers()
 
         self.progress_bar = qtw.QProgressBar()
