@@ -60,6 +60,8 @@ class MainWindow(qtw.QMainWindow):
         self.init_status_bar()
         self.apply_styles()
 
+        self.show()
+
     def init_mw_ui(self):
         """
         Initialize the main user-interface.
@@ -215,5 +217,4 @@ class MainWindow(qtw.QMainWindow):
 if __name__ == '__main__':
     app = qtw.QApplication(sys.argv)
     window = MainWindow()
-    window.show()
     sys.exit(app.exec_())
