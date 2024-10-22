@@ -54,13 +54,13 @@ class MainWindow(qtw.QMainWindow):
         self.file_model = qtw.QFileSystemModel()
         self.file_model.setRootPath(self.project_directory)
 
-        self.init_ui()
+        self.init_mw_ui()
         self.init_menu_bar()
         self.init_tool_bar()
         self.init_status_bar()
         self.apply_styles()
 
-    def init_ui(self):
+    def init_mw_ui(self):
         """
         Initialize the main user-interface.
         """
