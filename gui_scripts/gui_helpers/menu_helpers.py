@@ -64,15 +64,29 @@ class MenuCreator:
         self.menu_bar_obj = menu_bar
         self.main_window_ref_obj = main_window_ref
         self.menu_bar_action_handler_obj = MenuActionHandler(self.menu_bar_obj, self.main_window_ref_obj)
+
+    def create_file_menu(self) -> qtw.QMenu:
         """
         Creates the basis of the file menu along with adding an open action.
         """
-        self.file_menu_obj = self.menu_bar_obj.addMenu('&File')
-        open_action = QtWidgets.QAction('&Load Configuration from File', self.menu_bar_obj)
-        open_action.triggered.connect(self.open_file)
-        self.file_menu_obj.addAction(open_action)
+        # add file menu
+        file_menu_obj = self.menu_bar_obj.addMenu('File')
 
-    def create_edit_menu(self):
+        # create file menu actions
+        load_config_action = self.menu_bar_action_handler_obj.create_load_config_from_file_action()
+        display_topology_action = self.menu_bar_action_handler_obj.create_display_topology_action()
+        settings_action = self.menu_bar_action_handler_obj.create_settings_action()
+        exit_action = self.menu_bar_action_handler_obj.create_exit_action()
+
+        # arrange file menu actions
+        file_menu_obj.addAction(load_config_action)
+        file_menu_obj.addAction(display_topology_action)
+        file_menu_obj.addAction(settings_action)
+        file_menu_obj.addSeparator()
+        file_menu_obj.addAction(exit_action)
+
+        return file_menu_obj
+
         """
         Creates the edit menu section.
         """
