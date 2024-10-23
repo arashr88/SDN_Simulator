@@ -1,30 +1,51 @@
 # pylint: disable=c-extension-no-member
 
-from PyQt5 import QtWidgets
+import networkx as nx
+from PyQt5 import QtWidgets as qtw, QtCore as qtc
+from data_scripts.structure_data import create_network
+
+from gui_scripts.gui_helpers.topology_helpers import TopologyCanvas
+from gui_scripts.gui_helpers.general_helpers import SettingsDialog
+from gui_scripts.gui_args.config_args import GUI_DEFAULT_SETTINGS
+from gui_scripts.gui_helpers.dialogs import Alert
+from gui_scripts.gui_args.config_args import AlertCode
 
 
-class MenuHelpers:
+class MenuBar(qtw.QMenuBar):
     """
-    Contains methods related to setting up the menu and their potential options.
+    The Menu Bar.
     """
+    app_close_signal_relay = qtc.pyqtSignal()
 
-    def __init__(self):
-        self.menu_bar_obj = None  # Updated from run_gui.py script
+    def __init__(self, main_window_ref: qtw.QMainWindow, parent=None):
+        """
+        Initializes the menu_bar.
+
+        :param main_window_ref: reference to the main window on which it belongs
+        :type QtWidgets.QMainWindow:
+        """
+        super().__init__(parent)
+        self.main_window_ref_obj = main_window_ref
+        self.menu_creator_obj = MenuCreator(self, self.main_window_ref_obj)
 
         self.file_menu_obj = None
         self.help_menu_obj = None
         self.edit_menu_obj = None
+        self.plot_menu_obj = None
 
-    def open_file(self):
+        self.setup_menu_bar()
+
+    def setup_menu_bar(self):
         """
-        Opens a json or yaml file.
+        Sets up the menu options for the menu bar.
+
+        :param : None
+        :return : None
         """
-        # Set the file dialog to filter for .yml and .json files only
-        file_name, _ = QtWidgets.QFileDialog.getOpenFileName(
-            self.menu_bar_obj, "Open Configuration File", "", "Config Files (*.yml *.json)"
-        )
-        if file_name:
-            print(f"Selected file: {file_name}")
+        self.file_menu_obj = self.menu_creator_obj.create_file_menu()
+        self.help_menu_obj = self.menu_creator_obj.create_edit_menu()
+        self.edit_menu_obj = self.menu_creator_obj.create_plot_menu()
+        self.plot_menu_obj = self.menu_creator_obj.create_help_menu()
 
     # TODO: Add to standards and guidelines, must be called "create", if action must end in "action"
     def create_file_menu(self):
