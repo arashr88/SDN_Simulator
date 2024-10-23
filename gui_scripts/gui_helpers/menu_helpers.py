@@ -47,8 +47,23 @@ class MenuBar(qtw.QMenuBar):
         self.edit_menu_obj = self.menu_creator_obj.create_plot_menu()
         self.plot_menu_obj = self.menu_creator_obj.create_help_menu()
 
-    # TODO: Add to standards and guidelines, must be called "create", if action must end in "action"
-    def create_file_menu(self):
+
+class MenuCreator:
+    """
+    Contains methods for configuring the menubar with menu items.
+    """
+
+    def __init__(self, menu_bar: MenuBar, main_window_ref: qtw.QMainWindow):
+        """
+        Initializes the menu helpers object.
+
+        :param menu_bar: A reference to the main window menu bar
+        :type menu_bar: QtWidgets.QMenuBar
+        :return : None
+        """
+        self.menu_bar_obj = menu_bar
+        self.main_window_ref_obj = main_window_ref
+        self.menu_bar_action_handler_obj = MenuActionHandler(self.menu_bar_obj, self.main_window_ref_obj)
         """
         Creates the basis of the file menu along with adding an open action.
         """
