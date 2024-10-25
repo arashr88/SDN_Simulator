@@ -134,6 +134,19 @@ class MenuActionHandler:
         self.menu_bar_obj = menu_bar
         self.main_window_ref_obj = main_window_ref
 
+    def create_load_config_from_file_action(self) -> qtw.QAction:
+        """
+        Create Load Config from File action
+
+        :param : None
+        :type : None
+        :return: The action that was just created.
+        :rtype: QtWidgets.QAction
+        """
+        load_config_action = qtw.QAction('Load Configuration from File', self.menu_bar_obj)
+        load_config_action.triggered.connect(self._load_config_file)
+        return load_config_action
+
     def create_plot_action(self) -> qtw.QAction:
         """
         Creates action for plotting
@@ -172,6 +185,32 @@ class MenuActionHandler:
         export_plot = qtw.QAction("Export Plot", self.menu_bar_obj)
         export_plot.triggered.connect(self._export_plot_cb)
         return export_plot
+
+    def _load_config_file(self):
+        """
+        Loads a configuration file from the user's system.
+
+        :param : None
+        :type : None
+        :return : None
+        :rtype : None
+        """
+        def get_config_file_name():
+            """
+            Prompts user to select the path of desired configuration file
+            """
+            # get any filename for opening
+            file_name, _ = qtw.QFileDialog.getOpenFileName(
+                parent=self.menu_bar_obj,
+                caption="Load Configuration File",
+                directory=qtc.QDir.homePath(),
+                filter="INI files (*.ini)",
+                options=qtw.QFileDialog.DontResolveSymlinks | qtw.QFileDialog.DontUseNativeDialog
+            )
+            return file_name
+
+        config_file_name = get_config_file_name()
+        print(f'{config_file_name}')
 
     @staticmethod
     def _plot_cb():
