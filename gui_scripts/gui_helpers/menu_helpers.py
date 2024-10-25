@@ -123,3 +123,96 @@ class MenuCreator:
         plot_menu_obj.addAction(export_plot_action)
 
         return plot_menu_obj
+
+
+class MenuActionHandler:
+    """
+    Helper class to handle creation and functionality of menu bar actions.
+    """
+
+    def __init__(self, menu_bar: MenuBar, main_window_ref: qtw.QMainWindow):
+        self.menu_bar_obj = menu_bar
+        self.main_window_ref_obj = main_window_ref
+
+    def create_plot_action(self) -> qtw.QAction:
+        """
+        Creates action for plotting
+
+        :param : None
+        :type : None
+        :return : Object representing the plot action
+        :rtype : QWidgets.QAction
+        """
+        plot_action = qtw.QAction("Plot", self.menu_bar_obj)
+        plot_action.triggered.connect(self._plot_cb)
+        return plot_action
+
+    def create_configure_plot_settings_action(self) -> qtw.QAction:
+        """
+        Creates action for configuring plot settings
+
+        :param : None
+        :type : None
+        :return : Object representing the configure plot settings action
+        :rtype : QWidgets.QAction
+        """
+        configure_plot_settings = qtw.QAction("Configure Plot Settings", self.menu_bar_obj)
+        configure_plot_settings.triggered.connect(self._configure_plot_settings_cb)
+        return configure_plot_settings
+
+    def create_export_plot_action(self) -> qtw.QAction:
+        """
+        Create action for exporting plots.
+
+        :param : None
+        :type : None
+        :return : Object representing the export plot action
+        :rtype : QWidgets.QAction
+        """
+        export_plot = qtw.QAction("Export Plot", self.menu_bar_obj)
+        export_plot.triggered.connect(self._export_plot_cb)
+        return export_plot
+
+    @staticmethod
+    def _plot_cb():
+        Alert(
+            parent=None,
+            title='Not Implemented',
+            text='Plot Menu not implemented yet...come back soon!'
+        ).alert(AlertCode.INFORMATION)
+
+    @staticmethod
+    def _configure_plot_settings_cb():
+        Alert(
+            parent=None,
+            title='Not Implemented',
+            text='Configure Plot settings menu not implemented yet...come back soon!'
+        ).alert(AlertCode.INFORMATION)
+
+    @staticmethod
+    def _export_plot_cb():
+        Alert(
+            parent=None,
+            title='Not Implemented',
+            text='Export plot menu not implemented yet...come back soon!'
+        ).alert(AlertCode.INFORMATION)
+
+    @staticmethod
+    def create_plot_sm_action(plot_action: str) -> qtw.QAction:
+        """
+        Creates a plot submenu action.
+
+        :param plot_action : Name of the plot action
+        :type plot_action : str
+        :return : Object representing action associated with plot_action
+        :rtype : QWidgets.QAction
+        """
+        def _user_alert_reason(pa):
+            Alert(
+                parent=None,
+                title='Not Implemented',
+                text=f'{pa} plot not implemented!'
+            ).alert(AlertCode.INFORMATION)
+        sm_action = qtw.QAction(f'Plot {plot_action}')
+        sm_action.triggered.connect(lambda: _user_alert_reason(plot_action))
+        return sm_action
