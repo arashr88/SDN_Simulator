@@ -147,6 +147,19 @@ class MenuActionHandler:
         load_config_action.triggered.connect(self._load_config_file)
         return load_config_action
 
+    def create_display_topology_action(self) -> qtw.QAction:
+        """
+        Creates action to display a topology
+
+        :param : None
+        :type : None
+        :return : Object representing the display topology action.
+        :rtype : QWidgets.QAction
+        """
+        display_topology_action = qtw.QAction('Display topology', self.menu_bar_obj)
+        display_topology_action.triggered.connect(self.display_topology)
+        return display_topology_action
+
     def create_plot_action(self) -> qtw.QAction:
         """
         Creates action for plotting
@@ -211,6 +224,45 @@ class MenuActionHandler:
 
         config_file_name = get_config_file_name()
         print(f'{config_file_name}')
+
+    def display_topology(self):
+        """
+        Displays a network topology.
+
+        :param : None
+        :type : None
+        :return : None
+        :rtype : None
+        """
+        def _display_topology(net_name):
+            topo_information_dict, _ = create_network(net_name=net_name)
+
+            edge_list = [(src, des, {'weight': link_len}) for (src, des), link_len in topo_information_dict.items()]
+            network_topo = nx.Graph(edge_list)
+
+            pos = nx.spring_layout(network_topo, seed=5, scale=2.0)  # Adjust the scale as needed
+
+            # Create a canvas and plot the topology
+            canvas = TopologyCanvas(self.main_window_ref_obj.mw_topology_view_area)
+            canvas.plot(network_topo, pos)
+            canvas.G = network_topo  # pylint: disable=invalid-name
+
+            # Draw nodes using scatter to enable picking
+            x, y = zip(*pos.values())  # pylint: disable=invalid-name
+            scatter = canvas.axes.scatter(x, y, s=200)
+            canvas.set_picker(scatter)
+
+            self.main_window_ref_obj.mw_topology_view_area.setWidget(canvas)
+
+        network_selection_dialog = qtw.QInputDialog()
+        network_selection_dialog.setSizeGripEnabled(True)
+        network_name, valid_net_name = network_selection_dialog.getItem(
+            None, "Choose a network type:",
+            "Select Network Type", GUI_DEFAULT_SETTINGS['supported_networks'], 0, False
+        )
+
+        if valid_net_name:
+            _display_topology(net_name=network_name)
 
     @staticmethod
     def _plot_cb():
