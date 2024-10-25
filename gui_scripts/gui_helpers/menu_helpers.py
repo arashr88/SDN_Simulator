@@ -96,4 +96,30 @@ class MenuCreator:
         """
         Creates the help menu section.
         """
-        self.help_menu_obj = self.menu_bar_obj.addMenu('&Help')
+
+    def create_plot_menu(self) -> qtw.QMenu:
+        """
+        Creates the plot menu
+        """
+        # add plot menu
+        plot_menu_obj = self.menu_bar_obj.addMenu('Plot')
+
+        # create plot menu actions e.g. plot >, configure plotting settings, export plot, etc
+        plot_submenu_obj = qtw.QMenu('Plot', plot_menu_obj)
+
+        plots = GUI_DEFAULT_SETTINGS['plots']
+        for plot_action in plots:
+            action = self.menu_bar_action_handler_obj.create_plot_sm_action(plot_action)
+            action.setParent(plot_submenu_obj)
+            plot_submenu_obj.addAction(action)
+
+        config_plot_settings_action = self.menu_bar_action_handler_obj.create_configure_plot_settings_action()
+        export_plot_action = self.menu_bar_action_handler_obj.create_export_plot_action()
+
+        # arrange plot menu actions
+        plot_menu_obj.addMenu(plot_submenu_obj)
+        plot_menu_obj.addAction(config_plot_settings_action)
+        plot_menu_obj.addSeparator()
+        plot_menu_obj.addAction(export_plot_action)
+
+        return plot_menu_obj
