@@ -160,6 +160,19 @@ class MenuActionHandler:
         display_topology_action.triggered.connect(self.display_topology)
         return display_topology_action
 
+    def create_settings_action(self) -> qtw.QAction:
+        """
+        Creates the action to open the settings dialog
+
+        :param : None
+        :type : None
+        :return : Object representing the settings action
+        :rtype : QWidgets.QAction
+        """
+        settings_action = qtw.QAction('Settings', self.menu_bar_obj)
+        settings_action.triggered.connect(self._open_settings)
+        return settings_action
+
     def create_plot_action(self) -> qtw.QAction:
         """
         Creates action for plotting
@@ -263,6 +276,12 @@ class MenuActionHandler:
 
         if valid_net_name:
             _display_topology(net_name=network_name)
+
+    @staticmethod
+    def _open_settings():
+        settings_dialog = SettingsDialog()
+        if settings_dialog.exec() == qtw.QDialog.Accepted:
+            print("Interaction complete")
 
     @staticmethod
     def _plot_cb():
