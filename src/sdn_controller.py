@@ -229,6 +229,7 @@ class SDNController:
             for path_index, path_list in enumerate(route_matrix):
                 if path_list is not False:
                     self.sdn_props.path_list = path_list
+                    self.sdn_props.path_index = path_index
                     mod_format_list = self.route_obj.route_props.mod_formats_matrix[path_index]
 
                     if ml_model is not None:
@@ -255,7 +256,7 @@ class SDNController:
                         self.spectrum_obj.spectrum_props.forced_core = force_core
                         self.spectrum_obj.spectrum_props.path_list = path_list
                         self.spectrum_obj.spectrum_props.forced_band = forced_band
-                        self.spectrum_obj.get_spectrum(mod_format_list=mod_format_list, path_index = path_index)
+                        self.spectrum_obj.get_spectrum(mod_format_list=mod_format_list)
                         # Request was blocked for this path
                         if self.spectrum_obj.spectrum_props.is_free is not True:
                             self.sdn_props.block_reason = 'congestion'
