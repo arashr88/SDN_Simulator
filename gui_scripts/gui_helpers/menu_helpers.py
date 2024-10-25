@@ -173,6 +173,19 @@ class MenuActionHandler:
         settings_action.triggered.connect(self._open_settings)
         return settings_action
 
+    def create_exit_action(self) -> qtw.QAction:
+        """
+        Creates action to stop application loop effectively quitting the GUI
+
+        :param : None
+        :type : None
+        :return : Object representing the exit action.
+        :rtype : QWidgets.QAction
+        """
+        exit_action = qtw.QAction('&Exit', self.menu_bar_obj)
+        exit_action.triggered.connect(self.menu_bar_obj.app_close_signal_relay)
+        return exit_action
+
     def create_plot_action(self) -> qtw.QAction:
         """
         Creates action for plotting
