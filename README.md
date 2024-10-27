@@ -5,7 +5,7 @@
 
 Welcome to the SDON Simulator, an open-source venture into the future of networking! Our core focus is on simulating Software Defined Elastic Optical Networks (SD-EONs), a cutting-edge approach that promises to revolutionize how data is transmitted over optical fibers. But that's just the beginning. We envision the SDN Simulator as a versatile simulation framework that can evolve to simulate a wide array of networking paradigms, now including the integration of artificial intelligence to enhance network optimization, performance, and decision-making processes.
 
-We need your insight and creativity! The true strength of open-source lies in community collaboration. Join us in pioneering the networks of tomorrow by contributing your unique simulations and features. Your expertise in AI and networking can help shape the future of this field.
+We need your insight and creativity! The true strength of open-source lies in community collaboration. Join us in pioneerin tomorrow's networks by contributing your unique simulations and features. Your expertise in AI and networking can help shape the future of this field.
 
 ## Getting Started
 
