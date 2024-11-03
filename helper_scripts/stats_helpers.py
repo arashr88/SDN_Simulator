@@ -40,6 +40,12 @@ class SimStats:
         self.block_variance = None
         self.block_ci = None
         self.block_ci_percent = None
+        self.bit_rate_request = None
+        self.bit_rate_blocked = 0
+        self.bit_rate_block_mean = None
+        self.bit_rate_block_variance = None
+        self.bit_rate_block_ci = None
+        self.bit_rate_block_ci_percent = None
         self.topology = None
         self.iteration = None
 
@@ -110,12 +116,14 @@ class SimStats:
         occupied_slots, guard_slots, active_reqs = self._get_snapshot_info(net_spec_dict=net_spec_dict,
                                                                            path_list=path_list)
         blocking_prob = self.blocked_reqs / req_num
+        bit_rate_block_prob = self.bit_rate_blocked / self.bit_rate_request
 
         self.stats_props.snapshots_dict[req_num]['occupied_slots'].append(occupied_slots)
         self.stats_props.snapshots_dict[req_num]['guard_slots'].append(guard_slots)
         self.stats_props.snapshots_dict[req_num]['active_requests'].append(active_reqs)
         self.stats_props.snapshots_dict[req_num]["blocking_prob"].append(blocking_prob)
         self.stats_props.snapshots_dict[req_num]['num_segments'].append(self.curr_trans)
+        self.stats_props.snapshots_dict[req_num]["bit_rate_blocking_prob"].append(bit_rate_block_prob)
 
     def _init_snapshots(self):
         for req_num in range(0, self.engine_props['num_requests'] + 1, self.engine_props['snapshot_step']):
@@ -154,7 +162,7 @@ class SimStats:
             data_type = getattr(self.stats_props, stat_key)
             if isinstance(data_type, list):
                 # Only reset sim_block_list when we encounter a new traffic volume
-                if self.iteration != 0 and stat_key == 'sim_block_list':
+                if self.iteration != 0 and stat_key in ['sim_block_list', 'sim_bit_rate_block_list']:
                     continue
                 setattr(self.stats_props, stat_key, list())
 
@@ -168,6 +176,8 @@ class SimStats:
         self._init_stat_lists()
 
         self.blocked_reqs = 0
+        self.bit_rate_blocked = 0
+        self.bit_rate_request = 0
         self.total_trans = 0
 
     def get_blocking(self):
@@ -178,11 +188,13 @@ class SimStats:
         """
         if self.engine_props['num_requests'] == 0:
             blocking_prob = 0
+            bit_rate_blocking_prob = 0
         else:
             blocking_prob = self.blocked_reqs / self.engine_props['num_requests']
+            bit_rate_blocking_prob = self.bit_rate_blocked / self.bit_rate_request
 
         self.stats_props.sim_block_list.append(blocking_prob)
-
+        self.stats_props.sim_bit_rate_block_list.append(bit_rate_blocking_prob)
     def _handle_iter_lists(self, sdn_data: object):
         for stat_key in sdn_data.stat_key_list:
             # TODO: Eventually change this name (sdn_data)
@@ -218,6 +230,8 @@ class SimStats:
         # Request was blocked
         if not sdn_data.was_routed:
             self.blocked_reqs += 1
+            self.bit_rate_blocked += int(sdn_data.bandwidth)
+            self.bit_rate_request += int(sdn_data.bandwidth)
             self.stats_props.block_reasons_dict[sdn_data.block_reason] += 1
             self.stats_props.block_bw_dict[req_data['bandwidth']] += 1
         else:
@@ -233,6 +247,7 @@ class SimStats:
             bandwidth = sdn_data.bandwidth
             mod_format = sdn_data.modulation_list[0]
 
+            self.bit_rate_request += int(sdn_data.bandwidth)
             self.stats_props.weights_dict[bandwidth][mod_format].append(round(float(sdn_data.path_weight),2))
 
     def _get_iter_means(self):
@@ -283,10 +298,12 @@ class SimStats:
         :rtype: bool
         """
         self.block_mean = mean(self.stats_props.sim_block_list)
+        self.bit_rate_block_mean = mean(self.stats_props.sim_bit_rate_block_list)
         if len(self.stats_props.sim_block_list) <= 1:
             return False
         
         self.block_variance = variance(self.stats_props.sim_block_list)
+        self.bit_rate_block_variance = variance(self.stats_props.sim_bit_rate_block_list)
 
         if self.block_mean == 0.0:
             return False
@@ -296,6 +313,11 @@ class SimStats:
             self.block_ci = block_ci_rate
             block_ci_percent = ((2 * block_ci_rate) / self.block_mean) * 100
             self.block_ci_percent = block_ci_percent
+            # bit rate blcoking
+            bit_rate_block_ci = 1.645 * (math.sqrt(self.bit_rate_block_variance) / math.sqrt(len(self.stats_props.sim_bit_rate_block_list)))
+            self.bit_rate_block_ci = bit_rate_block_ci
+            bit_rate_block_ci_percent = ((2 * bit_rate_block_ci) / self.bit_rate_block_mean) * 100
+            self.bit_rate_block_ci_percent = bit_rate_block_ci_percent
         except ZeroDivisionError:
             return False
 
@@ -332,6 +354,11 @@ class SimStats:
         self.save_dict['blocking_variance'] = self.block_variance
         self.save_dict['ci_rate_block'] = self.block_ci
         self.save_dict['ci_percent_block'] = self.block_ci_percent
+
+        self.save_dict['bit_rate_blocking_mean'] = self.bit_rate_block_mean
+        self.save_dict['bit_rate_blocking_variance'] = self.bit_rate_block_variance
+        self.save_dict['ci_rate_bit_rate_block'] = self.bit_rate_block_ci
+        self.save_dict['ci_percent_bit_rate_block'] = self.bit_rate_block_ci_percent
 
         self.save_dict['iter_stats'][self.iteration] = dict()
         for stat_key in vars(self.stats_props).keys():
