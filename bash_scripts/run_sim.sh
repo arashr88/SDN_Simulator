@@ -4,40 +4,28 @@
 #SBATCH -c 20
 #SBATCH -G 0
 #SBATCH --mem=40000
-#SBATCH -t 4-00:00:00
+#SBATCH -t 14-00:00:00
 #SBATCH -o slurm-%A_%a.out  # Output file for each task
-#SBATCH --array=0-7  # Define array size based on total combinations
+#SBATCH --array=0-3  # Define array size based on total combinations
 
 set -e  # Stop the script if any command fails
 
 echo "Starting job with SLURM_ARRAY_TASK_ID: $SLURM_ARRAY_TASK_ID"
 
-# Load Conda module
-module load conda/latest
+# Load the Python 3.11.7 module
+module load python/3.11.7
 
-# Initialize Conda to enable 'conda activate'
-eval "$(conda shell.bash hook)"
-
-# Set a temporary Conda cache directory to avoid stale file issues
-export CONDA_PKGS_DIRS="/tmp/conda_pkgs_$SLURM_ARRAY_TASK_ID"
-
-# Define a unique environment name for each task
-env_name="py311_env_${SLURM_ARRAY_TASK_ID}"
-
-# Create a new Conda environment with Python 3.11.7 for this task
-echo "Creating Conda environment $env_name"
-conda create -n "$env_name" python=3.11.7 -y
-
-# Activate the Conda environment for this task
-conda activate "$env_name"
-
-# Install required libraries from requirements.txt
-pip install --cache-dir ~/.pip-cache -r ~/Git/SDON_simulator/requirements.txt
+# Verify the loaded Python version
+python --version
 
 # Define parameter arrays
 allocation_methods=("first_fit" "last_fit")
 spectrum_allocation_priorities=("CSB" "BSC")
-cores_per_link=(13 19)
+cores_per_link=(4)
+
+# Define additional variables
+num_requests=15000
+multi_fiber=False
 
 # Calculate total combinations
 total_combinations=$(( ${#allocation_methods[@]} * ${#spectrum_allocation_priorities[@]} * ${#cores_per_link[@]} ))
@@ -64,18 +52,17 @@ echo "Running simulation with:"
 echo "  Allocation method: $allocation_method"
 echo "  Spectrum priority: $spectrum_priority"
 echo "  Cores per link: $cores"
+echo "  Number of requests: $num_requests"
+echo "  Multi-fiber: $multi_fiber"
 
 # Move to the project directory
 cd ~/Git/SDON_simulator/ || { echo "Failed to change to SDON_simulator directory"; exit 1; }
 
 # Run the simulation with the specified parameters
-python run_sim.py --allocation_method "$allocation_method" --spectrum_allocation_priority "$spectrum_priority" --cores_per_link "$cores"
+python run_sim.py --allocation_method "$allocation_method" \
+                  --spectrum_allocation_priority "$spectrum_priority" \
+                  --cores_per_link "$cores" \
+                  --num_requests "$num_requests" \
+                  --multi_fiber "$multi_fiber"
 
 echo "Job completed successfully for SLURM_ARRAY_TASK_ID: $SLURM_ARRAY_TASK_ID"
-
-# Deactivate and remove the Conda environment after the job
-conda deactivate
-conda env remove -n "$env_name"
-
-# Clean up the temporary Conda package directory
-rm -rf "/tmp/conda_pkgs_$SLURM_ARRAY_TASK_ID"
