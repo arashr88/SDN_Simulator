@@ -331,33 +331,37 @@ class SnrMeasurements:
         "QPSK": 200,
         "BPSK": 100
         }
-        if self.engine_props['cores_per_link'] == 4:
-            loaded_data = np.load('MF-USB6014-MCF4-C2.npy', allow_pickle=True)
-            loaded_data_gsnr = np.load('GSNR-USB6014-MCF4-C2.npy', allow_pickle=True)
-        elif self.spectrum_props.core_num == 6 and self.engine_props['cores_per_link'] == 7:
-            loaded_data = np.load('MF-USB6014-MCF7-C6.npy', allow_pickle=True)
-            loaded_data_gsnr = np.load('GSNR-USB6014-MCF7-C6.npy', allow_pickle=True)
-        elif self.spectrum_props.core_num < 6 and self.engine_props['cores_per_link'] == 7:
-            loaded_data = np.load('MF-USB6014-MCF7-C3.npy', allow_pickle=True)
-            loaded_data_gsnr = np.load('GSNR-USB6014-MCF7-C3.npy', allow_pickle=True)
-        elif self.spectrum_props.core_num  < 6 and self.engine_props['cores_per_link'] == 13:
-            loaded_data = np.load('MF-USB6014-MCF13-C2.npy', allow_pickle=True)
-            loaded_data_gsnr = np.load('GSNR-USB6014-MCF13-C2.npy', allow_pickle=True)
-        elif 5 < self.spectrum_props.core_num  < 12 and self.engine_props['cores_per_link'] == 13:
-            loaded_data = np.load('MF-USB6014-MCF13-C5.npy', allow_pickle=True)
-            loaded_data_gsnr = np.load('GSNR-USB6014-MCF13-C5.npy', allow_pickle=True)
-        elif self.spectrum_props.core_num  == 12 and self.engine_props['cores_per_link'] == 13:
-            loaded_data = np.load('MF-USB6014-MCF13-C6.npy', allow_pickle=True)
-            loaded_data_gsnr = np.load('GSNR-USB6014-MCF13-C6.npy', allow_pickle=True)
-        elif self.spectrum_props.core_num >= 12 and self.engine_props['cores_per_link'] == 19:
-            loaded_data = np.load('MF-USB6014-MCF19-C6.npy', allow_pickle=True)
-            loaded_data_gsnr = np.load('GSNR-USB6014-MCF19-C6.npy', allow_pickle=True)
-        elif self.spectrum_props.core_num  in [0,2,4,6,8,10] and self.engine_props['cores_per_link'] == 19:
-            loaded_data = np.load('MF-USB6014-MCF19-C3.npy', allow_pickle=True)
-            loaded_data_gsnr = np.load('GSNR-USB6014-MCF19-C3.npy', allow_pickle=True)
-        elif self.spectrum_props.core_num  in [1,3,5,7,9,11] and self.engine_props['cores_per_link'] == 19:
-            loaded_data = np.load('MF-USB6014-MCF19-C4.npy', allow_pickle=True)
-            loaded_data_gsnr = np.load('GSNR-USB6014-MCF19-C4.npy', allow_pickle=True)
+        if self.engine_props['multi_fiber']:
+            loaded_data = np.load('MF-USB6014-MF.npy', allow_pickle=True)
+            loaded_data_gsnr = np.load('GSNR-USB6014-MF.npy', allow_pickle=True)
+        else:
+            if self.engine_props['cores_per_link'] == 4:
+                loaded_data = np.load('MF-USB6014-MCF4-C2.npy', allow_pickle=True)
+                loaded_data_gsnr = np.load('GSNR-USB6014-MCF4-C2.npy', allow_pickle=True)
+            elif self.spectrum_props.core_num == 6 and self.engine_props['cores_per_link'] == 7:
+                loaded_data = np.load('MF-USB6014-MCF7-C6.npy', allow_pickle=True)
+                loaded_data_gsnr = np.load('GSNR-USB6014-MCF7-C6.npy', allow_pickle=True)
+            elif self.spectrum_props.core_num < 6 and self.engine_props['cores_per_link'] == 7:
+                loaded_data = np.load('MF-USB6014-MCF7-C3.npy', allow_pickle=True)
+                loaded_data_gsnr = np.load('GSNR-USB6014-MCF7-C3.npy', allow_pickle=True)
+            elif self.spectrum_props.core_num  < 6 and self.engine_props['cores_per_link'] == 13:
+                loaded_data = np.load('MF-USB6014-MCF13-C2.npy', allow_pickle=True)
+                loaded_data_gsnr = np.load('GSNR-USB6014-MCF13-C2.npy', allow_pickle=True)
+            elif 5 < self.spectrum_props.core_num  < 12 and self.engine_props['cores_per_link'] == 13:
+                loaded_data = np.load('MF-USB6014-MCF13-C5.npy', allow_pickle=True)
+                loaded_data_gsnr = np.load('GSNR-USB6014-MCF13-C5.npy', allow_pickle=True)
+            elif self.spectrum_props.core_num  == 12 and self.engine_props['cores_per_link'] == 13:
+                loaded_data = np.load('MF-USB6014-MCF13-C6.npy', allow_pickle=True)
+                loaded_data_gsnr = np.load('GSNR-USB6014-MCF13-C6.npy', allow_pickle=True)
+            elif self.spectrum_props.core_num >= 12 and self.engine_props['cores_per_link'] == 19:
+                loaded_data = np.load('MF-USB6014-MCF19-C6.npy', allow_pickle=True)
+                loaded_data_gsnr = np.load('GSNR-USB6014-MCF19-C6.npy', allow_pickle=True)
+            elif self.spectrum_props.core_num  in [0,2,4,6,8,10] and self.engine_props['cores_per_link'] == 19:
+                loaded_data = np.load('MF-USB6014-MCF19-C3.npy', allow_pickle=True)
+                loaded_data_gsnr = np.load('GSNR-USB6014-MCF19-C3.npy', allow_pickle=True)
+            elif self.spectrum_props.core_num  in [1,3,5,7,9,11] and self.engine_props['cores_per_link'] == 19:
+                loaded_data = np.load('MF-USB6014-MCF19-C4.npy', allow_pickle=True)
+                loaded_data_gsnr = np.load('GSNR-USB6014-MCF19-C4.npy', allow_pickle=True)
         slot_index = 0
         if self.spectrum_props.curr_band == 'l':
             slot_index = self.spectrum_props.start_slot
@@ -404,33 +408,37 @@ class SnrMeasurements:
         "QPSK": 200,
         "BPSK": 100
         }
-        if self.engine_props['cores_per_link'] == 4:
-            loaded_data = np.load('MF-USB6014-MCF4-C2.npy', allow_pickle=True)
-            loaded_data_gsnr = np.load('GSNR-USB6014-MCF4-C2.npy', allow_pickle=True)
-        elif self.spectrum_props.core_num == 6 and self.engine_props['cores_per_link'] == 7:
-            loaded_data = np.load('MF-USB6014-MCF7-C6.npy', allow_pickle=True)
-            loaded_data_gsnr = np.load('GSNR-USB6014-MCF7-C6.npy', allow_pickle=True)
-        elif self.spectrum_props.core_num < 6 and self.engine_props['cores_per_link'] == 7:
-            loaded_data = np.load('MF-USB6014-MCF7-C3.npy', allow_pickle=True)
-            loaded_data_gsnr = np.load('GSNR-USB6014-MCF7-C3.npy', allow_pickle=True)
-        elif self.spectrum_props.core_num  < 6 and self.engine_props['cores_per_link'] == 13:
-            loaded_data = np.load('MF-USB6014-MCF13-C2.npy', allow_pickle=True)
-            loaded_data_gsnr = np.load('GSNR-USB6014-MCF13-C2.npy', allow_pickle=True)
-        elif 5 < self.spectrum_props.core_num  < 12 and self.engine_props['cores_per_link'] == 13:
-            loaded_data = np.load('MF-USB6014-MCF13-C5.npy', allow_pickle=True)
-            loaded_data_gsnr = np.load('GSNR-USB6014-MCF13-C5.npy', allow_pickle=True)
-        elif self.spectrum_props.core_num  == 12 and self.engine_props['cores_per_link'] == 13:
-            loaded_data = np.load('MF-USB6014-MCF13-C6.npy', allow_pickle=True)
-            loaded_data_gsnr = np.load('GSNR-USB6014-MCF13-C6.npy', allow_pickle=True)
-        elif self.spectrum_props.core_num >= 12 and self.engine_props['cores_per_link'] == 19:
-            loaded_data = np.load('MF-USB6014-MCF19-C6.npy', allow_pickle=True)
-            loaded_data_gsnr = np.load('GSNR-USB6014-MCF19-C6.npy', allow_pickle=True)
-        elif self.spectrum_props.core_num  in [0,2,4,6,8,10] and self.engine_props['cores_per_link'] == 19:
-            loaded_data = np.load('MF-USB6014-MCF19-C3.npy', allow_pickle=True)
-            loaded_data_gsnr = np.load('GSNR-USB6014-MCF19-C3.npy', allow_pickle=True)
-        elif self.spectrum_props.core_num  in [1,3,5,7,9,11] and self.engine_props['cores_per_link'] == 19:
-            loaded_data = np.load('MF-USB6014-MCF19-C4.npy', allow_pickle=True)
-            loaded_data_gsnr = np.load('GSNR-USB6014-MCF19-C4.npy', allow_pickle=True)
+        if self.engine_props['multi_fiber']:
+            loaded_data = np.load('MF-USB6014-MF.npy', allow_pickle=True)
+            loaded_data_gsnr = np.load('GSNR-USB6014-MF.npy', allow_pickle=True)
+        else:
+            if self.engine_props['cores_per_link'] == 4:
+                loaded_data = np.load('MF-USB6014-MCF4-C2.npy', allow_pickle=True)
+                loaded_data_gsnr = np.load('GSNR-USB6014-MCF4-C2.npy', allow_pickle=True)
+            elif self.spectrum_props.core_num == 6 and self.engine_props['cores_per_link'] == 7:
+                loaded_data = np.load('MF-USB6014-MCF7-C6.npy', allow_pickle=True)
+                loaded_data_gsnr = np.load('GSNR-USB6014-MCF7-C6.npy', allow_pickle=True)
+            elif self.spectrum_props.core_num < 6 and self.engine_props['cores_per_link'] == 7:
+                loaded_data = np.load('MF-USB6014-MCF7-C3.npy', allow_pickle=True)
+                loaded_data_gsnr = np.load('GSNR-USB6014-MCF7-C3.npy', allow_pickle=True)
+            elif self.spectrum_props.core_num  < 6 and self.engine_props['cores_per_link'] == 13:
+                loaded_data = np.load('MF-USB6014-MCF13-C2.npy', allow_pickle=True)
+                loaded_data_gsnr = np.load('GSNR-USB6014-MCF13-C2.npy', allow_pickle=True)
+            elif 5 < self.spectrum_props.core_num  < 12 and self.engine_props['cores_per_link'] == 13:
+                loaded_data = np.load('MF-USB6014-MCF13-C5.npy', allow_pickle=True)
+                loaded_data_gsnr = np.load('GSNR-USB6014-MCF13-C5.npy', allow_pickle=True)
+            elif self.spectrum_props.core_num  == 12 and self.engine_props['cores_per_link'] == 13:
+                loaded_data = np.load('MF-USB6014-MCF13-C6.npy', allow_pickle=True)
+                loaded_data_gsnr = np.load('GSNR-USB6014-MCF13-C6.npy', allow_pickle=True)
+            elif self.spectrum_props.core_num >= 12 and self.engine_props['cores_per_link'] == 19:
+                loaded_data = np.load('MF-USB6014-MCF19-C6.npy', allow_pickle=True)
+                loaded_data_gsnr = np.load('GSNR-USB6014-MCF19-C6.npy', allow_pickle=True)
+            elif self.spectrum_props.core_num  in [0,2,4,6,8,10] and self.engine_props['cores_per_link'] == 19:
+                loaded_data = np.load('MF-USB6014-MCF19-C3.npy', allow_pickle=True)
+                loaded_data_gsnr = np.load('GSNR-USB6014-MCF19-C3.npy', allow_pickle=True)
+            elif self.spectrum_props.core_num  in [1,3,5,7,9,11] and self.engine_props['cores_per_link'] == 19:
+                loaded_data = np.load('MF-USB6014-MCF19-C4.npy', allow_pickle=True)
+                loaded_data_gsnr = np.load('GSNR-USB6014-MCF19-C4.npy', allow_pickle=True)
         SNR_val = 0
         slot_index = 0
         if self.spectrum_props.curr_band == 'l':
