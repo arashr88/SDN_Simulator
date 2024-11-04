@@ -334,12 +334,13 @@ class SimStats:
             return False
         
         try:
-            block_ci_rate = 1.645 * (math.sqrt(self.block_variance) / math.sqrt(len(self.stats_props.sim_block_list)))
+            # 1.645 for 90% confidence level and 1.96 for 95% confidence level
+            block_ci_rate = 1.96 * (math.sqrt(self.block_variance) / math.sqrt(len(self.stats_props.sim_block_list)))
             self.block_ci = block_ci_rate
             block_ci_percent = ((2 * block_ci_rate) / self.block_mean) * 100
             self.block_ci_percent = block_ci_percent
             # bit rate blcoking
-            bit_rate_block_ci = 1.645 * (math.sqrt(self.bit_rate_block_variance) / math.sqrt(len(self.stats_props.sim_bit_rate_block_list)))
+            bit_rate_block_ci = 1.96 * (math.sqrt(self.bit_rate_block_variance) / math.sqrt(len(self.stats_props.sim_bit_rate_block_list)))
             self.bit_rate_block_ci = bit_rate_block_ci
             bit_rate_block_ci_percent = ((2 * bit_rate_block_ci) / self.bit_rate_block_mean) * 100
             self.bit_rate_block_ci_percent = bit_rate_block_ci_percent
