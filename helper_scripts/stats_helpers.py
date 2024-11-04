@@ -138,6 +138,13 @@ class SimStats:
             for modulation in obj.keys():
                 self.stats_props.weights_dict[bandwidth][modulation] = list()
                 self.stats_props.mods_used_dict[bandwidth][modulation] = 0
+                if modulation not in self.stats_props.mods_used_dict or isinstance(self.stats_props.mods_used_dict[modulation]['length']['overall'], dict):
+                    self.stats_props.mods_used_dict[modulation] = dict()
+                    self.stats_props.mods_used_dict[modulation]['length'] = dict()
+                    self.stats_props.mods_used_dict[modulation]['length']['overall'] = list()
+                    for band in self.engine_props['band_list']:
+                        self.stats_props.mods_used_dict[modulation][band] = 0
+                        self.stats_props.mods_used_dict[modulation]['length'][band] = list()
 
             self.stats_props.block_bw_dict[bandwidth] = 0
 
@@ -206,7 +213,11 @@ class SimStats:
                     self.stats_props.cores_dict[data] += 1
                 elif stat_key == 'modulation_list':
                     bandwidth = sdn_data.bandwidth_list[i]
+                    band = sdn_data.band_list[i]
                     self.stats_props.mods_used_dict[bandwidth][data] += 1
+                    self.stats_props.mods_used_dict[data][band] += 1
+                    self.stats_props.mods_used_dict[data]['length'][band].append(sdn_data.path_weight)
+                    self.stats_props.mods_used_dict[data]['length']['overall'].append(sdn_data.path_weight)
                 # elif stat_key == 'xt_list':
                 #     self.stats_props.xt_list.append(data) # TODO: double-check
                 elif stat_key == 'start_slot_list':
@@ -271,6 +282,20 @@ class SimStats:
                         deviation = stdev(data_list)
                     mod_obj[modulation] = {'mean': mean(data_list), 'std': deviation,
                                            'min': min(data_list), 'max': max(data_list)}
+                for key, value in self.stats_props.mods_used_dict[modulation]['length'].items():
+                    if not isinstance(value, list):
+                        continue
+                    if len(value) == 0:
+                        self.stats_props.mods_used_dict[modulation] ['length'][key] = {'mean': None, 'std': None, 'min': None, 'max': None} 
+                    else:
+                        # TODO: Is this ever equal to one?
+                        if len(value) == 1:
+                            deviation = 0.0
+                        else:
+                            deviation = stdev(value)
+                        self.stats_props.mods_used_dict[modulation]['length'][key] = {'mean': round(float(mean(value)),2), 'std': round(float(deviation),2),
+                                                                                        'min': round(float(min(value)),2), 'max': round(float(max(value)),2)}
+                        
 
     def end_iter_update(self):
         """
