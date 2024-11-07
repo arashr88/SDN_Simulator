@@ -47,11 +47,11 @@ class PlotHelpers:  # pylint: disable=too-few-public-methods
         cong_list = dict_to_list(self.erlang_dict['iter_stats'], 'congestion', ['block_reasons_dict'])
         dist_list = dict_to_list(self.erlang_dict['iter_stats'], 'distance', ['block_reasons_dict'])
 
-        average_length = np.nanmean(lengths_list) if lengths_list.size > 0 else 0
-        average_hop = np.nanmean(hops_list) if hops_list.size > 0 else 0
-        average_time = np.nanmean(times_list) if times_list.size > 0 else 0
-        average_cong = np.nanmean(cong_list) if cong_list.size > 0 else 0
-        average_dist = np.nanmean(dist_list) if dist_list.size > 0 else 0
+        average_length = np.nanmean(lengths_list) if len(lengths_list) > 0 else 0
+        average_hop = np.nanmean(hops_list) if len(hops_list) > 0 else 0
+        average_time = np.nanmean(times_list) if len(times_list) > 0 else 0
+        average_cong = np.nanmean(cong_list) if len(cong_list) > 0 else 0
+        average_dist = np.nanmean(dist_list) if len(dist_list) > 0 else 0
 
         self.plot_props.plot_dict[self.time][self.sim_num].lengths_list.append(average_length)
         self.plot_props.plot_dict[self.time][self.sim_num].hops_list.append(average_hop)
