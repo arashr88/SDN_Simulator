@@ -50,7 +50,7 @@ class PlotArgs:
         self.cong_block_list = []  # Percentage of blocking due to a congestion constraint
         self.holding_time = None  # Holding time for the simulation run
         self.cores_per_link = None  # Number of cores per link
-        self.spectral_slots = None  # Spectral slots per core
+        self.c_band = None  # Spectral slots per core
         self.learn_rate = None  # For artificial intelligence (AI), learning rate used if any
         self.discount_factor = None  # For AI, discount factor used if any
 
