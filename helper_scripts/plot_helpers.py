@@ -5,7 +5,7 @@ from statistics import mean
 import numpy as np
 
 from helper_scripts.sim_helpers import dict_to_list, list_to_title
-from arg_scripts.plot_args import PlotArgs
+from arg_scripts.plot_args import PlotArgs, PlotProps
 
 
 class PlotHelpers:  # pylint: disable=too-few-public-methods
@@ -13,7 +13,7 @@ class PlotHelpers:  # pylint: disable=too-few-public-methods
     A class to assist with various tasks related when plotting statistics.
     """
 
-    def __init__(self, plot_props: object, net_names_list: list):
+    def __init__(self, plot_props: PlotProps, net_names_list: list):
         self.plot_props = plot_props
 
         self.plot_props.title_names = list_to_title(input_list=net_names_list)
