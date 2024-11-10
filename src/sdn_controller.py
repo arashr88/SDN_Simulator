@@ -7,6 +7,7 @@ from helper_scripts.ml_helpers import get_ml_obs
 from arg_scripts.sdn_args import SDNProps
 from src.routing import Routing
 from src.spectrum_assignment import SpectrumAssignment
+from src.grooming import Grooming
 
 
 class SDNController:
@@ -19,11 +20,12 @@ class SDNController:
         self.sdn_props = SDNProps()
 
         self.ai_obj = None
+        self.grooming_obj = Grooming(engine_props=self.engine_props, sdn_props=self.sdn_props)
         self.route_obj = Routing(engine_props=self.engine_props, sdn_props=self.sdn_props)
         self.spectrum_obj = SpectrumAssignment(engine_props=self.engine_props, sdn_props=self.sdn_props,
                                                route_props=self.route_obj.route_props)
 
-    def release(self, lightpath_id: int):
+    def release(self, lightpath_id: int, slicing_flag: bool = False):
         """
         Removes a previously allocated request from the network.
         :param lightpath_id: Lightpath id for release resources
@@ -43,8 +45,11 @@ class SDNController:
                         self.sdn_props.net_spec_dict[(dest, source)]['cores_matrix'][band][core_num][gb_index] = 0
 
         # Remove lightpath from lightpath_status_dict
-        light_id = tuple(sorted([self.sdn_props.path_list[0], self.sdn_props.path_list[-1]]))
-        self.sdn_props.lightpath_status_dict[light_id].pop(lightpath_id)
+        if not  slicing_flag:
+            light_id = tuple(sorted([self.sdn_props.path_list[0], self.sdn_props.path_list[-1]]))
+            if self.sdn_props.lightpath_status_dict[light_id][lightpath_id]['requests_dict']:
+                raise ValueError('The releasing lightpath are currently using')
+            self.sdn_props.lightpath_status_dict[light_id].pop(lightpath_id)
 
     def _allocate_gb(self, band: str, core_matrix: list, rev_core_matrix: list, core_num: int, end_slot: int, lightpath_id: int):
         if core_matrix[band][core_num][end_slot] != 0.0 or rev_core_matrix[band][core_num][end_slot] != 0.0:
@@ -182,13 +187,16 @@ class SDNController:
                     remaining_bw -= bw
                     self.sdn_props.num_trans += 1
                     self.sdn_props.is_sliced = True
+                    self.sdn_props.was_new_lp_established = True
                 else:
                     self.sdn_props.was_routed = False
                     self.sdn_props.block_reason = 'congestion'
                     if remaining_bw != int(self.sdn_props.bandwidth):
-                        self.release()
+                        for lpid in self.sdn_props.lightpath_id_list:
+                            self.release(lightpath_id = lpid, slicing_flag = True)
                     self.sdn_props.num_trans = 1
                     self.sdn_props.is_sliced = False
+                    self.sdn_props.was_new_lp_established = False
                     break
             else:
                 # mod_format = get_path_mod(mods_dict=mods_dict, path_len=path_len)
@@ -204,7 +212,7 @@ class SDNController:
     def handle_event(self, req_dict: dict, request_type: str, force_slicing: bool = False,
                      # pylint: disable=too-many-statements
                      force_route_matrix: list = None, forced_index: int = None,
-                     force_core: int = None, ml_model=None, force_mod_format: str = None, forced_band: str = None, lightpath_id_list: int = None):
+                     force_core: int = None, ml_model=None, force_mod_format: str = None, forced_band: str = None):
         """
         Handles any event that occurs in the simulation, controls this class.
 
@@ -219,15 +227,27 @@ class SDNController:
         :param forced_band: Whether to force a band or not.
         :param lightpath_id: Lightpath id for release
         """
-        self._init_req_stats()
-        # Even if the request is blocked, we still consider one transponder
-        self.sdn_props.num_trans = 1
+
 
         if request_type == "release":
+            if self.engine_props['is_grooming_enabled']:
+                lightpath_id_list = self.grooming_obj.handle_grooming(request_type)
+            else:
+                lightpath_id_list = self.sdn_props.lightpath_id_list
             for lightpath_id in lightpath_id_list:
                 self.release(lightpath_id=lightpath_id)
             return
-
+        
+        self._init_req_stats()
+        # Even if the request is blocked, we still consider one transponder
+        self.sdn_props.num_trans = 1
+        if self.engine_props['is_grooming_enabled']:
+            self.grooming_obj.lightpath_status_dict = self.sdn_props.lightpath_status_dict
+            groom_res = self.grooming_obj.handle_grooming(request_type)
+            if groom_res:
+                return
+            else:
+                self.sdn_props.was_new_lp_established = None 
         start_time = time.time()
         if force_route_matrix is None:
             self.route_obj.get_route()
@@ -287,6 +307,7 @@ class SDNController:
 
                     if not segment_slicing and not force_slicing:
                         self.sdn_props.is_sliced = False
+                        self.sdn_props.was_new_lp_established = True
                         self.allocate()
                     return
 

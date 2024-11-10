@@ -8,6 +8,8 @@ class SDNProps:
     def __init__(self):
         self.path_list = None  # List of nodes for the current request
         self.was_routed = None  # Flag to determine successful route
+        self.was_groomed = None # Flag to determine successful groomed no new lightpath
+        self.was_new_lp_established = None # Falg to now a new lightpath is established for request or not
         self.topology = None  # Networkx topology
         self.net_spec_dict = None  # Current network spectrum database
         self.lightpath_status_dict = None # Current lightpath status
@@ -71,11 +73,20 @@ class SDNProps:
         self.bandwidth_list = list()
         self.lightpath_bandwidth_list = list()
         self.lightpath_id_list = list()
+        self.path_list = list()
+        self.was_routed = None
+        self.was_groomed = None
+        self.was_new_lp_established = None
+        self.is_sliced = None
 
     def get_lightpath_id(self):
         self.lightpath_counter += 1
         return self.lightpath_counter
     
+    def reset_lightpath_id_couter(self):
+        self.lightpath_counter = 0
+        
+                
     # TODO: Update standards and guidelines, this should be a standardized function name.
     def get_data(self, key: str):
         """

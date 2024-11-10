@@ -52,6 +52,8 @@ class Engine:
                 "path": sdn_props.path_list,
                 "is_sliced": sdn_props.is_sliced,
                 "was_routed": sdn_props.was_routed,
+                "was_groomed": sdn_props.was_groomed,
+                "was_new_lp_established": sdn_props.was_new_lp_established,
                 "core_list": sdn_props.core_list,
                 "start_slot_list":sdn_props.start_slot_list,
                 "end_slot_list":sdn_props.end_slot_list,
@@ -61,7 +63,7 @@ class Engine:
                 # TODO: Update
                 "band": sdn_props.band_list,
             }})
-            # if self.engine_props["is_grooming_enabled"]:
+        if sdn_props.was_new_lp_established:
             light_id = tuple(sorted([sdn_props.path_list[0], sdn_props.path_list[-1]]))
             for lp_cnt in range(0, len(sdn_props.lightpath_id_list)):
                 if light_id not in self.lightpath_status_dict:
@@ -76,8 +78,31 @@ class Engine:
                     "snr_cost": sdn_props.xt_list[lp_cnt],
                     "lightpath_bandwidth": sdn_props.lightpath_bandwidth_list[lp_cnt], # TODO: check
                     "remaining_bandwidth": sdn_props.lightpath_bandwidth_list[lp_cnt] - int(sdn_props.bandwidth_list[lp_cnt]),
-                    'requests_dict':{self.reqs_dict[curr_time]['req_id']: int(self.reqs_dict[curr_time]['bandwidth'])},
+                    'requests_dict':{self.reqs_dict[curr_time]['req_id']: int(sdn_props.bandwidth_list[lp_cnt])},
                 }
+
+    def update_release_param(self, curr_time: float):
+        for req_key, req_value in self.reqs_dict[curr_time].items():
+            # TODO: This should be changed in reqs_dict eventually
+            if req_key == 'mod_formats':
+                req_key = 'mod_formats_dict'
+            self.sdn_obj.sdn_props.update_params(key=req_key, spectrum_key=None, spectrum_obj=None, value=req_value)
+        for req_key, req_value in self.reqs_status_dict[self.reqs_dict[curr_time]['req_id']].items():
+            props_key = req_key.split('_')[0]  # pylint: disable=use-maxsplit-arg
+            if req_key == 'mod_format':
+                props_key = 'modulation_list'
+            elif props_key == 'path':
+                props_key = 'path_list'
+            elif props_key == 'band':
+                props_key = 'band_list'
+            elif props_key == 'snr_cost':
+                props_key = 'xt_list'
+            elif props_key == 'lightpath' and req_key.split('_')[1] == 'bandwidth':
+                props_key = 'lightpath_bandwidth'
+            else:
+                props_key = req_key
+            self.sdn_obj.sdn_props.update_params(key=props_key, spectrum_key=None, spectrum_obj=None, value=req_value)
+
 
     def handle_arrival(self, curr_time: float, force_route_matrix: list = None, force_core: int = None,
                        force_slicing: bool = False, forced_index: int = None, force_mod_format: str = None):
@@ -113,20 +138,11 @@ class Engine:
 
         :param curr_time: The arrival time of the request.
         """
-        for req_key, req_value in self.reqs_dict[curr_time].items():
-            # TODO: This should be changed in reqs_dict eventually
-            if req_key == 'mod_formats':
-                req_key = 'mod_formats_dict'
-            self.sdn_obj.sdn_props.update_params(key=req_key, spectrum_key=None, spectrum_obj=None, value=req_value)
-
         if self.reqs_dict[curr_time]['req_id'] in self.reqs_status_dict:
-            if not self.engine_props['is_grooming_enabled']:
-                lightpath_id_list = self.reqs_status_dict[self.reqs_dict[curr_time]['req_id']]['lightpath_id_list']
-            else:
-                # TODO: devop grooming function
-                raise NotImplementedError
+            self.sdn_obj._init_req_stats()
+            self.update_release_param(curr_time)
             self.sdn_obj.sdn_props.path_list = self.reqs_status_dict[self.reqs_dict[curr_time]['req_id']]['path']
-            self.sdn_obj.handle_event(req_dict=self.reqs_dict[curr_time], request_type='release', lightpath_id_list=lightpath_id_list)
+            self.sdn_obj.handle_event(req_dict=self.reqs_dict[curr_time], request_type='release')
             self.net_spec_dict = self.sdn_obj.sdn_props.net_spec_dict
             self.lightpath_status_dict = self.sdn_obj.sdn_props.lightpath_status_dict
         # Request was blocked, nothing to release
@@ -232,6 +248,14 @@ class Engine:
 
         
         return resp
+    def reset(self):
+        "reset Parameters for intiating new iteration"
+        self.sdn_obj.sdn_props.reset_lightpath_id_couter()
+        self.lightpath_status_dict = dict()
+        self.sdn_obj.sdn_props.lightpath_status_dict = dict()
+        self.sdn_obj.grooming_obj.grooming_props.lightpath_status_dict = dict()
+        self.reqs_status_dict = dict()
+
 
     def init_iter(self, iteration: int):
         """
@@ -259,6 +283,8 @@ class Engine:
                 self.ml_model = load_model(engine_props=self.engine_props)
 
         seed = self.engine_props["seeds"][iteration] if self.engine_props["seeds"] else iteration + 1
+        
+        self.reset()
         self.generate_requests(seed)
 
     def run(self):

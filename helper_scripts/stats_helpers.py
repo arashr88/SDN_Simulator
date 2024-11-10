@@ -230,10 +230,11 @@ class SimStats:
             self._handle_iter_lists(sdn_data=sdn_data)
             self.stats_props.route_times_list.append(sdn_data.route_time)
             self.total_trans += sdn_data.num_trans
-            bandwidth = sdn_data.bandwidth
-            mod_format = sdn_data.modulation_list[0]
+            for i in range(0,len(sdn_data.lightpath_bandwidth_list)):
+                bandwidth = str(sdn_data.lightpath_bandwidth_list[i])
+                mod_format = sdn_data.modulation_list[i]
 
-            self.stats_props.weights_dict[bandwidth][mod_format].append(round(float(sdn_data.path_weight),2))
+                self.stats_props.weights_dict[bandwidth][mod_format].append(round(float(sdn_data.path_weight),2))
 
     def _get_iter_means(self):
         for _, curr_snapshot in self.stats_props.snapshots_dict.items():
