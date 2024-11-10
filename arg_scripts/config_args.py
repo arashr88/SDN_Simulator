@@ -65,6 +65,7 @@ ARASH_REQUIRED_OPTIONS = {
         'pre_calc_mod_selection': str_to_bool,
         'spectrum_allocation_priority': str,
         'save_step': int,
+        'save_start_end_slots': str_to_bool,
     },
     'topology_settings': {
         'network': str,
@@ -233,6 +234,7 @@ COMMAND_LINE_PARAMS = [
     ['multi_fiber',  bool, ''],
     ['spectrum_allocation_priority', str, ''],
     ['save_step', int, ''],
+    ['save_start_end_slots', bool, ''],    
 
     # StableBaselines3 arguments
     ['algo', str, ''],

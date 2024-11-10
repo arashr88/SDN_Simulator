@@ -405,6 +405,9 @@ class SimStats:
                     self.save_dict['iter_stats'][self.iteration][f'{save_key}min'] = round(float(min(stat_array)),2)
                     self.save_dict['iter_stats'][self.iteration][f'{save_key}max'] = round(float(max(stat_array)),2)
             else:
+                if stat_key in ['start_slot_list', 'end_slot_list'] and not self.engine_props['save_start_end_slots']:
+                    self.save_dict['iter_stats'][self.iteration][stat_key] = []
+                    continue
                 self.save_dict['iter_stats'][self.iteration][stat_key] = copy.deepcopy(getattr(self.stats_props,
                                                                                                stat_key))
 
