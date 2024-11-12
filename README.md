@@ -9,6 +9,8 @@ We need your insight and creativity! The true strength of open-source lies in co
 
 ## Getting Started
 
+My contribution is important!
+
 ### Supported Operating Systems
 
 - Ubuntu version 20.04+
