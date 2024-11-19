@@ -78,7 +78,7 @@ class PlotArgs:
         return hasattr(self, key)
 
     @staticmethod
-    def update_info_dict(plot_props: dict, input_dict: dict, info_item_list: list, time: str, sim_num: str):
+    def update_info_dict(plot_props: PlotProps, input_dict: dict, info_item_list: list, time: str, sim_num: str):
         """
         Updates various items in the plot dictionary.
 
