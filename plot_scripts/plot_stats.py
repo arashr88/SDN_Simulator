@@ -32,7 +32,7 @@ class PlotStats:
 
     def _setup_plot(self, title: str, y_lim: list, y_label: str, x_label: str, grid: bool = True, y_ticks: bool = True,
                     x_ticks: bool = True):
-        plt.figure(figsize=(7, 5), dpi=300)
+        plt.figure(figsize=(6.4, 4.8), dpi=100, layout='constrained')
         plt.title(f"{self.props.title_names} {title}")
         plt.ylabel(y_label)
         plt.xlabel(x_label)
