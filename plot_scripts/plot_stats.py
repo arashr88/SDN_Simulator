@@ -58,8 +58,8 @@ class PlotStats:
         """
         color_count = 0
         style_count = 0
-        for _, sims_dict in self.props.plot_dict.items():
-            for _, info_dict in sims_dict.items():
+        for sims_dict in self.props.plot_dict.values():
+            for info_dict in sims_dict.values():
                 style = self.props.style_list[style_count]
 
                 for y_val in y_vals_list:
@@ -84,8 +84,8 @@ class PlotStats:
         legend_list = list()
         color_count = 0
         style_count = 0
-        for _, sims_dict in self.props.plot_dict.items():
-            for _, info_dict in sims_dict.items():
+        for sims_dict in self.props.plot_dict.values():
+            for info_dict in sims_dict.values():
                 style = self.props.style_list[style_count]
 
                 for y_val, legend_val in zip(y_vals_list, legend_val_list):
