@@ -59,6 +59,24 @@ class PlotArgs:
         self.sum_errors_list = []  # For RL, sum of errors per episode
         self.epsilon_list = []  # For RL, decay of epsilon w.r.t. each episode
 
+    def __setitem__(self, key, value):
+        setattr(self, key, value)
+
+    def __getitem__(self, key):
+        try:
+            return getattr(self, key)
+        except AttributeError:
+            raise KeyError(f'{key} not found')
+
+    def __delitem__(self, key):
+        try:
+            delattr(self, key)
+        except AttributeError:
+            raise KeyError(f"'{key}' not found")
+
+    def __contains__(self, key):
+        return hasattr(self, key)
+
     @staticmethod
     def update_info_dict(plot_props: dict, input_dict: dict, info_item_list: list, time: str, sim_num: str):
         """
