@@ -166,7 +166,7 @@ class PlotStats:
         :param art_int: Artificial intelligence flag for plotting.
         """
         self._setup_plot("Average Blocking Prob. vs. Erlang", y_label='Average Blocking Probability',
-                         x_label='Time Steps', y_ticks=False, x_ticks=False, y_lim=[0, 0.15])
+                         x_label='Erlang', y_ticks=False, x_ticks=False, y_lim=[0, 0.15])
 
         if not art_int:
             self._plot_helper_one(x_vals='erlang_list', y_vals_list=['blocking_list'],
