@@ -87,17 +87,18 @@ class PlotStats:
         for sims_dict in self.props.plot_dict.values():
             for info_dict in sims_dict.values():
                 style = self.props.style_list[style_count]
+                for y_val in y_vals_list:
+                    for legend_val in legend_val_list:
+                        color = self.props.color_list[color_count]
 
-                for y_val, legend_val in zip(y_vals_list, legend_val_list):
-                    color = self.props.color_list[color_count]
-                    plt.plot(info_dict[x_vals], info_dict[y_val], linestyle=style, markersize=2.3, color=color)
+                        # Plot with each combination of y_val and legend_val
+                        plt.plot(info_dict[x_vals], info_dict[y_val], linestyle=style, markersize=2.3, color=color)
 
-                    if not force_legend:
-                        legend_val = info_dict[legend_val]
-                        legend_list.append(legend_val)
-                    else:
-                        legend_list = legend_val_list
-                    color_count += 1
+                        if force_legend:
+                            legend_list.append(legend_val)
+                        else:
+                            legend_list.append(info_dict[legend_val])
+                        color_count += 1
 
             color_count = 0
             style_count = 0
