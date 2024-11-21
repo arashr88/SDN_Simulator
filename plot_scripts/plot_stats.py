@@ -200,11 +200,6 @@ def main():
     plot_obj = PlotStats(sims_info_dict=sims_info_dict)
 
     plot_obj.plot_blocking(art_int=True)
-    # plot_obj.plot_path_length()
-    # plot_obj.plot_hops()
-    # plot_obj.plot_block_reasons()
-    # plot_obj.plot_rewards(erlang_list=[700])
-    # plot_obj.plot_errors(erlang_list=[700])
 
 
 if __name__ == '__main__':
