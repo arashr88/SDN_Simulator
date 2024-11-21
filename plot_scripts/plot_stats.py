@@ -168,13 +168,12 @@ class PlotStats:
         self._setup_plot("Average Blocking Prob. vs. Erlang", y_label='Average Blocking Probability',
                          x_label='Erlang', y_ticks=False, x_ticks=False, y_lim=[0, 0.15])
 
-        if not art_int:
+        if art_int:
+            self._plot_helper_two(y_vals_list=['block_per_iter'], erlang=250, file_name='bp_e250')
+        else:
             self._plot_helper_one(x_vals='erlang_list', y_vals_list=['blocking_list'],
                                   legend_val_list=['Trained US', 'Trained Euro', 'Baseline', 'Combined Model'],
                                   force_legend=True, file_name='average_bp')
-        else:
-            # TODO: Make block per iter a matrix, for each Erlang
-            self._plot_helper_two(y_vals_list=['block_per_iter'], erlang=750, file_name='bp_e750')
 
 
 def main():
