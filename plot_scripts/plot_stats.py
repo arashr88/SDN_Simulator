@@ -43,7 +43,7 @@ class PlotStats:
             plt.yscale('log')
 
         if y_lim:
-            plt.ylim(y_lim)
+            plt.ylim(y_lim[0], y_lim[1])
 
         if x_ticks:
             plt.xticks(self.props.x_tick_list)
