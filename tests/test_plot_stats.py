@@ -94,7 +94,7 @@ class TestPlotStats(unittest.TestCase):
             self.plot_stats._plot_helper_one(x_vals, y_vals_list, legend_val_list, legend_str, file_name)
 
             # Ensure plotting calls were made
-            self.assertEqual(mock_plt.plot.call_count, len(y_vals_list))
+            self.assertEqual(mock_plt.plot.call_count, len(y_vals_list) * len(legend_val_list))
             self.assertEqual(mock_plt.legend.call_count, 1)
             mock_save_plot.assert_called_once_with(file_name=file_name)
 
