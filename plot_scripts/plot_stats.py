@@ -100,8 +100,8 @@ class PlotStats:
                             legend_list.append(info_dict[legend_val])
                         color_count += 1
 
-            color_count = 0
-            style_count = 0
+                    color_count = 0
+                    style_count = 0
 
         plt.legend(legend_list)
         self._save_plot(file_name=file_name)
