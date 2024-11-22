@@ -65,14 +65,14 @@ class PlotArgs:
     def __getitem__(self, key):
         try:
             return getattr(self, key)
-        except AttributeError:
-            raise KeyError(f'{key} not found')
+        except AttributeError as exc:
+            raise KeyError(f'{key} not found') from exc
 
     def __delitem__(self, key):
         try:
             delattr(self, key)
-        except AttributeError:
-            raise KeyError(f"'{key}' not found")
+        except AttributeError as exc:
+            raise KeyError(f"'{key}' not found") from exc
 
     def __contains__(self, key):
         return hasattr(self, key)
