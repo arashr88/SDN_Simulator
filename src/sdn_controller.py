@@ -2,7 +2,7 @@ import time
 
 import numpy as np
 
-from helper_scripts.sim_helpers import sort_dict_keys, get_path_mod, find_path_len
+from helper_scripts.sim_helpers import sort_dict_keys, get_path_mod, find_path_len, sort_nested_dict_vals
 from helper_scripts.ml_helpers import get_ml_obs
 from arg_scripts.sdn_args import SDNProps
 from src.routing import Routing
@@ -98,7 +98,7 @@ class SDNController:
                                   core_num=core_num, band=band, lightpath_id=lightpath_id)
 
     # TODO: No support for multi-band
-    def _update_req_stats(self, bandwidth: str):
+    def _update_req_stats(self, bandwidth: str, remaining: str):
         self.sdn_props.bandwidth_list.append(bandwidth)
         for stat_key in self.sdn_props.stat_key_list:
             spectrum_key = stat_key.split('_')[0]  # pylint: disable=use-maxsplit-arg
@@ -116,6 +116,9 @@ class SDNController:
                 spectrum_key = 'lightpath_id'
             elif spectrum_key == 'lightpath' and stat_key.split('_')[1] == 'bandwidth':
                 spectrum_key = 'lightpath_bandwidth'
+            elif spectrum_key == 'remaining':
+                self.sdn_props.remaining_bw = remaining
+                continue
 
             self.sdn_props.update_params(key=stat_key, spectrum_key=spectrum_key, spectrum_obj=self.spectrum_obj)
 
@@ -167,7 +170,7 @@ class SDNController:
             self.sdn_props.is_sliced = False
 
     def _handle_dynamic_slicing(self, path_list: list, path_index: int, forced_segments: int ):
-        remaining_bw = int(self.sdn_props.bandwidth)
+        remaining_bw = self.sdn_props.remaining_bw if self.sdn_props.was_partially_groomed else int(self.sdn_props.bandwidth)
         path_len = find_path_len(path_list=path_list, topology=self.engine_props['topology'])
         bw_mod_dict = sort_dict_keys(dictionary=self.engine_props['mod_per_bw'])
         self.spectrum_obj.spectrum_props.path_list = path_list
@@ -180,23 +183,30 @@ class SDNController:
                     lp_id = self.sdn_props.get_lightpath_id()
                     self.spectrum_obj.spectrum_props.lightpath_id = lp_id
                     self.spectrum_obj.spectrum_props.lightpath_bandwidth = bw
-                    self.spectrum_obj
+                    # self.spectrum_obj
                     self.allocate()
                     dedicated_bw = bw if remaining_bw > bw else remaining_bw
-                    self._update_req_stats(bandwidth=str(dedicated_bw))
+                    self._update_req_stats(bandwidth=str(dedicated_bw), remaining= str(remaining_bw-dedicated_bw if remaining_bw > dedicated_bw else 0))
                     remaining_bw -= bw
                     self.sdn_props.num_trans += 1
                     self.sdn_props.is_sliced = True
-                    self.sdn_props.was_new_lp_established = True
+                    # self.sdn_props.was_new_lp_established = True
+                    self.sdn_props.was_new_lp_established.append(lp_id)
+                    self.sdn_props.was_partially_routed = False
                 else:
                     self.sdn_props.was_routed = False
                     self.sdn_props.block_reason = 'congestion'
+                    if self.engine_props['can_partially_serve'] and remaining_bw != int(self.sdn_props.bandwidth):
+                        if self.sdn_props.was_partially_groomed or path_index == self.engine_props['k_paths'] - 1:
+                            self.sdn_props.is_sliced = True
+                            self.sdn_props.was_partially_routed = True
+                            return
                     if remaining_bw != int(self.sdn_props.bandwidth):
                         for lpid in self.sdn_props.lightpath_id_list:
                             self.release(lightpath_id = lpid, slicing_flag = True)
                     self.sdn_props.num_trans = 1
                     self.sdn_props.is_sliced = False
-                    self.sdn_props.was_new_lp_established = False
+                    self.sdn_props.was_new_lp_established = list()
                     break
             else:
                 # mod_format = get_path_mod(mods_dict=mods_dict, path_len=path_len)
@@ -247,7 +257,12 @@ class SDNController:
             if groom_res:
                 return
             else:
-                self.sdn_props.was_new_lp_established = None 
+                self.sdn_props.was_new_lp_established = list()
+                if self.sdn_props.was_partially_groomed: 
+                    force_route_matrix = [self.sdn_props.path_list]
+                    mod_formats_dict = sort_nested_dict_vals(original_dict=self.sdn_props.mod_formats_dict,
+                                                        nested_key='max_length')
+                    force_mod_format = [list(mod_formats_dict.keys())[::-1]]
         start_time = time.time()
         if force_route_matrix is None:
             self.route_obj.get_route()
@@ -255,9 +270,12 @@ class SDNController:
         else:
             route_matrix = force_route_matrix
             # TODO: This is an inconsistency
-            self.route_obj.route_props.mod_formats_matrix = [force_mod_format]
-            # TODO: This must be fixed
-            self.route_obj.route_props.weights_list = [0]
+            self.route_obj.route_props.mod_formats_matrix = force_mod_format
+            if self.sdn_props.was_partially_groomed:
+                self.route_obj.route_props.weights_list = [self.sdn_props.path_weight]
+            else:
+                # TODO: This must be fixed
+                self.route_obj.route_props.weights_list = [0]
         route_time = time.time() - start_time
 
         segment_slicing = False
@@ -280,7 +298,11 @@ class SDNController:
                         if self.engine_props['dynamic_lps']:
                             self._handle_dynamic_slicing(path_list= path_list, path_index= path_index, forced_segments= force_slicing )
                             if not self.sdn_props.was_routed:
-                                continue
+                                if self.engine_props['can_partially_serve']:
+                                    if not self.sdn_props.was_partially_groomed and not self.sdn_props.was_partially_routed:
+                                        continue
+                                else:
+                                    continue
                         else:
                             self._handle_slicing(path_list=path_list, forced_segments=forced_segments)
                             if not self.sdn_props.was_routed:
@@ -298,7 +320,11 @@ class SDNController:
                             continue
                         lp_id = self.sdn_props.get_lightpath_id()
                         self.spectrum_obj.spectrum_props.lightpath_id = lp_id
-                        self._update_req_stats(bandwidth=self.sdn_props.bandwidth)
+                        if self.sdn_props.was_partially_groomed:
+                            allocate_br_lp = str(self.sdn_props.remaining_bw)
+                        else:
+                            allocate_br_lp = self.sdn_props.bandwidth
+                        self._update_req_stats(bandwidth = allocate_br_lp, remaining = '0')
 
                     self.sdn_props.was_routed = True
                     self.sdn_props.route_time = route_time
@@ -306,14 +332,27 @@ class SDNController:
                     self.sdn_props.spectrum_object = self.spectrum_obj.spectrum_props
 
                     if not segment_slicing and not force_slicing:
-                        self.sdn_props.is_sliced = False
-                        self.sdn_props.was_new_lp_established = True
+                        if self.sdn_props.was_partially_groomed:
+                            self.sdn_props.is_sliced = True
+                        else:
+                            self.sdn_props.is_sliced = False
+                        self.sdn_props.was_new_lp_established.append(lp_id)
                         self.allocate()
                     return
 
             if self.engine_props['max_segments'] > 1 and self.sdn_props.bandwidth != '25' and not segment_slicing:
                 segment_slicing = True
                 continue
+
+            if self.engine_props['can_partially_serve']: 
+                if self.sdn_props.remaining_bw != '0':
+                    self.sdn_props.was_partially_routed = True
+            else:
+                if self.sdn_props.was_partially_groomed:
+                    self.grooming_obj.handle_grooming("release")
+                    self.sdn_props.was_partially_routed = False
+                    self.sdn_props.remaining_bw = int(self.sdn_props.bandwidth)
+
 
             self.sdn_props.block_reason = 'distance'
             self.sdn_props.was_routed = False
