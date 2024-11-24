@@ -40,6 +40,12 @@ class SimStats:
         self.block_variance = None
         self.block_ci = None
         self.block_ci_percent = None
+        self.bit_rate_request = 0
+        self.bit_rate_blocked = 0
+        self.bit_rate_block_mean = None
+        self.bit_rate_block_variance = None
+        self.bit_rate_block_ci = None
+        self.bit_rate_block_ci_percent = None
         self.topology = None
         self.iteration = None
 
@@ -183,20 +189,24 @@ class SimStats:
 
         self.stats_props.sim_block_list.append(blocking_prob)
 
-    def _handle_iter_lists(self, sdn_data: object):
+    def _handle_iter_lists(self, sdn_data: object, new_lp_index: list):
         for stat_key in sdn_data.stat_key_list:
             # TODO: Eventually change this name (sdn_data)
             curr_sdn_data = sdn_data.get_data(key=stat_key)
             if stat_key == 'xt_list':
-                self.stats_props.xt_list.append(mean(curr_sdn_data)) # TODO: double-check
+                snr_list = list()
+                for cnt in range(0,len(curr_sdn_data)):
+                    if cnt in new_lp_index:
+                        snr_list.append(curr_sdn_data[cnt])
+                self.stats_props.xt_list.append(mean(snr_list)) # TODO: double-check
             for i, data in enumerate(curr_sdn_data):
+                if i not in new_lp_index:
+                    continue
                 if stat_key == 'core_list':
                     self.stats_props.cores_dict[data] += 1
                 elif stat_key == 'modulation_list':
                     bandwidth = sdn_data.bandwidth_list[i]
                     self.stats_props.mods_used_dict[bandwidth][data] += 1
-                # elif stat_key == 'xt_list':
-                #     self.stats_props.xt_list.append(int(data)) # TODO: double-check
                 elif stat_key == 'start_slot_list':
                     self.stats_props.start_slot_list.append(int(data))
                 elif stat_key == 'end_slot_list':
@@ -218,23 +228,37 @@ class SimStats:
         # Request was blocked
         if not sdn_data.was_routed:
             self.blocked_reqs += 1
+            self.bit_rate_blocked += sdn_data.remaining_bw
+            self.bit_rate_request += int(sdn_data.bandwidth)
             self.stats_props.block_reasons_dict[sdn_data.block_reason] += 1
             self.stats_props.block_bw_dict[req_data['bandwidth']] += 1
         else:
+            self.bit_rate_request += int(sdn_data.bandwidth)
+            if sdn_data.was_groomed:
+                return
+            new_lp_index = list()
+            for lp_cnt in range(0,len(sdn_data.lightpath_id_list)):
+                if sdn_data.lightpath_id_list[lp_cnt] in sdn_data.was_new_lp_established:
+                    new_lp_index.append(lp_cnt)
+            if sdn_data.remaining_bw != '0':
+                self.bit_rate_blocked += int(sdn_data.remaining_bw)
+                if not new_lp_index:
+                    return
             num_hops = len(sdn_data.path_list) - 1
             self.stats_props.hops_list.append(num_hops)
 
             path_len = find_path_len(path_list=sdn_data.path_list, topology=self.topology)
             self.stats_props.lengths_list.append(round(float(path_len),2))
 
-            self._handle_iter_lists(sdn_data=sdn_data)
+            self._handle_iter_lists(sdn_data=sdn_data, new_lp_index = new_lp_index)
             self.stats_props.route_times_list.append(sdn_data.route_time)
             self.total_trans += sdn_data.num_trans
             for i in range(0,len(sdn_data.lightpath_bandwidth_list)):
-                bandwidth = str(sdn_data.lightpath_bandwidth_list[i])
-                mod_format = sdn_data.modulation_list[i]
+                if i in new_lp_index:
+                    bandwidth = str(sdn_data.lightpath_bandwidth_list[i])
+                    mod_format = sdn_data.modulation_list[i]
 
-                self.stats_props.weights_dict[bandwidth][mod_format].append(round(float(sdn_data.path_weight),2))
+                    self.stats_props.weights_dict[bandwidth][mod_format].append(round(float(sdn_data.path_weight),2))
 
     def _get_iter_means(self):
         for _, curr_snapshot in self.stats_props.snapshots_dict.items():
@@ -257,6 +281,9 @@ class SimStats:
                         deviation = stdev(data_list)
                     mod_obj[modulation] = {'mean': mean(data_list), 'std': deviation,
                                            'min': min(data_list), 'max': max(data_list)}
+        
+        # if self.engine_props['transponder_usage_per_node']:
+        #     for _, mod_obj in self.stats_props.transponder_usage.items():
 
     def end_iter_update(self):
         """
