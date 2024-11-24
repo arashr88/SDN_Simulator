@@ -44,7 +44,7 @@ class Engine:
         """
         sdn_props = self.sdn_obj.sdn_props
         self.stats_obj.iter_update(req_data=self.reqs_dict[curr_time], sdn_data=sdn_props)
-        if sdn_props.was_routed:
+        if sdn_props.was_routed or (sdn_props.was_partially_routed and self.engine_props['can_partially_serve']):
             self.stats_obj.curr_trans = sdn_props.num_trans
 
             self.reqs_status_dict.update({self.reqs_dict[curr_time]['req_id']: {
@@ -59,13 +59,19 @@ class Engine:
                 "end_slot_list":sdn_props.end_slot_list,
                 "bandwidth_list": sdn_props.bandwidth_list,
                 "lightpath_id_list": sdn_props.lightpath_id_list,
+                "lightpath_bandwidth_list": sdn_props.lightpath_bandwidth_list,
                 "snr_cost": sdn_props.xt_list,
+                "was_partially_routed": sdn_props.was_partially_routed,
+                "was_partially_groomed": sdn_props.was_partially_groomed,
+                "remaining_bw": sdn_props.remaining_bw,
                 # TODO: Update
                 "band": sdn_props.band_list,
             }})
         if sdn_props.was_new_lp_established:
             light_id = tuple(sorted([sdn_props.path_list[0], sdn_props.path_list[-1]]))
             for lp_cnt in range(0, len(sdn_props.lightpath_id_list)):
+                if sdn_props.lightpath_id_list[lp_cnt] not in sdn_props.was_new_lp_established:
+                    continue
                 if light_id not in self.lightpath_status_dict:
                     self.lightpath_status_dict[light_id] = {}
                 self.lightpath_status_dict[light_id][sdn_props.lightpath_id_list[lp_cnt]] = {
@@ -97,8 +103,6 @@ class Engine:
                 props_key = 'band_list'
             elif props_key == 'snr_cost':
                 props_key = 'xt_list'
-            elif props_key == 'lightpath' and req_key.split('_')[1] == 'bandwidth':
-                props_key = 'lightpath_bandwidth'
             else:
                 props_key = req_key
             self.sdn_obj.sdn_props.update_params(key=props_key, spectrum_key=None, spectrum_obj=None, value=req_value)
@@ -123,7 +127,8 @@ class Engine:
             if req_key in ['lightpath_id_list']:
                 continue
             self.sdn_obj.sdn_props.update_params(key=req_key, spectrum_key=None, spectrum_obj=None, value=req_value)
-
+        self.sdn_obj.sdn_props.remaining_bw = self.sdn_obj.sdn_props.bandwidth
+        
         self.sdn_obj.handle_event(request_type='arrival', force_route_matrix=force_route_matrix,
                                   force_slicing=force_slicing, forced_index=forced_index, force_core=force_core,
                                   ml_model=self.ml_model, req_dict=self.reqs_dict[curr_time],
