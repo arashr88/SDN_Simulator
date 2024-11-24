@@ -8,8 +8,10 @@ class SDNProps:
     def __init__(self):
         self.path_list = None  # List of nodes for the current request
         self.was_routed = None  # Flag to determine successful route
-        self.was_groomed = None # Flag to determine successful groomed no new lightpath
-        self.was_new_lp_established = None # Falg to now a new lightpath is established for request or not
+        self.was_groomed = None # Flag to determine successful fully groomed without new lightpath
+        self.was_partially_groomed = False # Flag to determine a portion of service successfully groomed 
+        self.was_partially_routed = False # Flag to determine a portion of service successfully routed 
+        self.was_new_lp_established = [] # Falg to now a new lightpath is established for request or not
         self.topology = None  # Networkx topology
         self.net_spec_dict = None  # Current network spectrum database
         self.lightpath_status_dict = None # Current lightpath status
@@ -18,6 +20,7 @@ class SDNProps:
         self.source = None  # Source node
         self.destination = None  # Destination node
         self.bandwidth = None  # Current bandwidth
+        self.remaining_bw = None 
         self.bandwidth_list = []  # Multiple bandwidths used (typically for light-segment slicing)
         self.modulation_list = []  # List of modulation formats used by a single request
         self.core_list = []  # List of cores used (typically for light-segment slicing)
@@ -38,7 +41,7 @@ class SDNProps:
         self.lightpath_counter = 0 # counter to set id t lightpaths
         
 
-        self.stat_key_list = ['modulation_list', 'xt_list', 'core_list', 'band_list', 'start_slot_list', 'end_slot_list', 'lightpath_bandwidth_list', 'lightpath_id_list']  # Statistical keys used to save results
+        self.stat_key_list = ['modulation_list', 'xt_list', 'core_list', 'band_list', 'start_slot_list', 'end_slot_list', 'lightpath_bandwidth_list', 'lightpath_id_list', 'remaining_bw']  # Statistical keys used to save results
 
     def update_params(self, key: str, spectrum_key: str, spectrum_obj: object, value: int = None):
         """
@@ -74,9 +77,12 @@ class SDNProps:
         self.lightpath_bandwidth_list = list()
         self.lightpath_id_list = list()
         self.path_list = list()
+        self.was_new_lp_established = list()
         self.was_routed = None
         self.was_groomed = None
-        self.was_new_lp_established = None
+        self.was_partially_groomed = False
+        self.was_partially_routed = False
+        self.remaining_bw = None
         self.is_sliced = None
 
     def get_lightpath_id(self):
