@@ -350,7 +350,11 @@ class SnrMeasurements:
             NotImplementedError(f"Unexpected band: {self.spectrum_props.curr_band}")
         mod_format = loaded_data[self.route_props.connection_index[0]][slot_index][path_index]
         SNR_val = loaded_data_gsnr[self.route_props.connection_index[0]][slot_index][path_index]
-        if mod_format_mapping[mod_format] == self.spectrum_props.modulation and BW_mapping[self.spectrum_props.modulation] >= int(self.sdn_props.bandwidth):
+        if self.sdn_props.remaining_bw:
+            req_bw = self.sdn_props.remaining_bw
+        else:
+            req_bw = int(self.sdn_props.bandwidth)
+        if mod_format_mapping[mod_format] == self.spectrum_props.modulation and BW_mapping[self.spectrum_props.modulation] >= req_bw:
             resp = True
             bw_resp = BW_mapping[self.spectrum_props.modulation]
         else:
