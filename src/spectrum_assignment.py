@@ -205,6 +205,9 @@ class SpectrumAssignment:
                 if self.engine_props['fixed_grid']:
                     self.spectrum_props.slots_needed = 1
                 else:
+                    if self.sdn_props.was_partially_groomed:
+                        bw_tmp = min((int(k) for k in self.engine_props['mod_per_bw'] if int(k) > int(self.sdn_props.remaining_bw)), default=None)
+                        self.spectrum_props.slots_needed = self.engine_props['mod_per_bw'][str(bw_tmp)][modulation]['slots_needed']
                     self.spectrum_props.slots_needed = self.sdn_props.mod_formats_dict[modulation]['slots_needed']
 
             if self.spectrum_props.slots_needed is None:
@@ -253,7 +256,7 @@ class SpectrumAssignment:
             else:
                 return 0, 0
         else:
-            # TODO: develop it for flexigrid
+            # TODO: develop it for flexigrid and considering remaining bw
             return 0,0
 
 
