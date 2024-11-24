@@ -66,6 +66,7 @@ ARASH_REQUIRED_OPTIONS = {
         'spectrum_allocation_priority': str,
         'is_grooming_enabled': str_to_bool,
         'save_step': int,
+        'can_partially_serve': str_to_bool,
     },
     'topology_settings': {
         'network': str,
@@ -233,6 +234,7 @@ COMMAND_LINE_PARAMS = [
     ['spectrum_allocation_priority', str, ''],
     ['is_grooming_enabled', bool, ''],
     ['save_step', int, ''],
+    ['can_partially_serve', bool, ''],
 
     # StableBaselines3 arguments
     ['algo', str, ''],
