@@ -182,9 +182,22 @@ class SnrMeasurements:
         self.snr_props.center_freq = self.spectrum_props.start_slot * self.engine_props['bw_per_slot']
         self.snr_props.center_freq += ((self.num_slots * self.engine_props['bw_per_slot']) / 2)
         self.snr_props.center_freq *= 10 ** 9
+        self.snr_props.center_freq += self.snr_props.link_dict['frequency_start_c'] 
 
         self.snr_props.bandwidth = self.num_slots * self.engine_props['bw_per_slot'] * 10 ** 9
         self.snr_props.center_psd = self.engine_props['input_power'] / self.snr_props.bandwidth
+
+    def _calculate_psd_ase(self):
+        """
+        Calculates the power spectral density ASE noise for a link.
+
+        :return: The total power spectral density ASE noise
+        :rtype float
+        """
+        psd_ase = self.snr_props.plank * self.snr_props.center_freq * self.snr_props.nsp
+        psd_ase *= (math.exp(self.snr_props.link_dict['attenuation'] * self.snr_props.length * 10 ** 3) - 1)
+        return psd_ase
+
 
     def check_snr(self):
         """
@@ -204,8 +217,7 @@ class SnrMeasurements:
             self._update_link_params(link_num=link_num)
 
             psd_nli = self._calculate_psd_nli()
-            psd_ase = self.snr_props.plank * self.snr_props.light_frequency * self.snr_props.nsp
-            psd_ase *= (math.exp(self.snr_props.link_dict['attenuation'] * self.snr_props.length * 10 ** 3) - 1)
+            psd_ase = self._calculate_psd_ase()
 
             if self.engine_props['xt_noise']:
                 # fixme
