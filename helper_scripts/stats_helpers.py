@@ -160,7 +160,7 @@ class SimStats:
             data_type = getattr(self.stats_props, stat_key)
             if isinstance(data_type, list):
                 # Only reset sim_block_list when we encounter a new traffic volume
-                if self.iteration != 0 and stat_key == 'sim_block_list':
+                if self.iteration != 0 and stat_key in ['sim_block_list', 'total_transponder_usage_list']:
                     continue
                 setattr(self.stats_props, stat_key, list())
 
@@ -228,7 +228,7 @@ class SimStats:
         # Request was blocked
         if not sdn_data.was_routed:
             self.blocked_reqs += 1
-            self.bit_rate_blocked += sdn_data.remaining_bw
+            self.bit_rate_blocked += int(sdn_data.bandwidth)
             self.bit_rate_request += int(sdn_data.bandwidth)
             self.stats_props.block_reasons_dict[sdn_data.block_reason] += 1
             self.stats_props.block_bw_dict[req_data['bandwidth']] += 1
@@ -282,10 +282,9 @@ class SimStats:
                     mod_obj[modulation] = {'mean': mean(data_list), 'std': deviation,
                                            'min': min(data_list), 'max': max(data_list)}
         
-        # if self.engine_props['transponder_usage_per_node']:
-        #     for _, mod_obj in self.stats_props.transponder_usage.items():
 
-    def end_iter_update(self):
+
+    def end_iter_update(self, total_transponders: int = None):
         """
         Updates relevant stats after an iteration has finished.
 
@@ -301,6 +300,8 @@ class SimStats:
             for block_type, num_times in self.stats_props.block_reasons_dict.items():
                 self.stats_props.block_reasons_dict[block_type] = num_times / float(self.blocked_reqs)
 
+        if self.engine_props['transponder_usage_per_node']:
+            self.stats_props.total_transponder_usage_list.append(total_transponders)
         self._get_iter_means()
 
     def get_conf_inter(self):
@@ -359,7 +360,8 @@ class SimStats:
         self.save_dict['blocking_mean'] = self.block_mean
         self.save_dict['blocking_variance'] = self.block_variance
         self.save_dict['ci_rate_block'] = self.block_ci
-        self.save_dict['ci_percent_block'] = self.block_ci_percent
+        self.save_dict['ci_percent_block'] = self.block_ci_percent    
+        self.save_dict['total_transponder_usage']  = round(float(mean(self.stats_props.total_transponder_usage_list)),2)
 
         self.save_dict['iter_stats'][self.iteration] = dict()
         for stat_key in vars(self.stats_props).keys():
@@ -380,6 +382,11 @@ class SimStats:
                     self.save_dict['iter_stats'][self.iteration][f'{save_key}min'] = round(float(min(stat_array)),2)
                     self.save_dict['iter_stats'][self.iteration][f'{save_key}max'] = round(float(max(stat_array)),2)
             else:
+                if stat_key == 'total_transponder_usage_list':
+                    if self.engine_props["transponder_usage_per_node"]:
+                        save_key = f"{stat_key.split('list')[0]}"
+                        self.save_dict['iter_stats'][self.iteration][save_key] = self.stats_props.total_transponder_usage_list[self.iteration]
+                    continue
                 self.save_dict['iter_stats'][self.iteration][stat_key] = copy.deepcopy(getattr(self.stats_props,
                                                                                                stat_key))
 
