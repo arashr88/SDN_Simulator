@@ -15,6 +15,7 @@ class SDNProps:
         self.topology = None  # Networkx topology
         self.net_spec_dict = None  # Current network spectrum database
         self.lightpath_status_dict = None # Current lightpath status
+        self.transponder_usage_dict = None # Transponder usage status per node
 
         self.req_id = None  # Current request ID number
         self.source = None  # Source node

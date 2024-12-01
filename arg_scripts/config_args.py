@@ -67,6 +67,7 @@ ARASH_REQUIRED_OPTIONS = {
         'is_grooming_enabled': str_to_bool,
         'save_step': int,
         'can_partially_serve': str_to_bool,
+        'transponder_usage_per_node': str_to_bool,
     },
     'topology_settings': {
         'network': str,
@@ -235,6 +236,7 @@ COMMAND_LINE_PARAMS = [
     ['is_grooming_enabled', bool, ''],
     ['save_step', int, ''],
     ['can_partially_serve', bool, ''],
+    ['transponder_usage_per_node', bool, ''],
 
     # StableBaselines3 arguments
     ['algo', str, ''],

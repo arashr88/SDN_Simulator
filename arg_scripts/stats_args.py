@@ -23,6 +23,7 @@ class StatsProps:
         self.end_slot_list = list() # # Tracks the end slot allocated in a simulation
         self.modulation_list = list() # Tracks the modulation
         self.bandwidth_list = list() # # Tracks the bandwidth
+        self.total_transponder_usage_list = list() # Tracks of total transponder
 
     def __repr__(self):
         return f"StatsProps({self.__dict__})"
