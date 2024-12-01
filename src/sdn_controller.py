@@ -46,6 +46,16 @@ class SDNController:
 
         # Remove lightpath from lightpath_status_dict
         if not  slicing_flag:
+
+            # update the transponder dict
+            for node in [self.sdn_props.source, self.sdn_props.destination]:
+
+                if node not in self.sdn_props.transponder_usage_dict:
+                    raise KeyError(f"Node '{node}' not found in transponder usage dictionary.")
+                    
+                self.sdn_props.transponder_usage_dict[node]["available_transponder"] += 1
+        
+
             light_id = tuple(sorted([self.sdn_props.path_list[0], self.sdn_props.path_list[-1]]))
             if self.sdn_props.lightpath_status_dict[light_id][lightpath_id]['requests_dict']:
                 raise ValueError('The releasing lightpath are currently using')
@@ -202,11 +212,25 @@ class SDNController:
                             self.sdn_props.was_partially_routed = True
                             return
                     if remaining_bw != int(self.sdn_props.bandwidth):
-                        for lpid in self.sdn_props.lightpath_id_list:
+                        for lpid in list(self.sdn_props.was_new_lp_established):
                             self.release(lightpath_id = lpid, slicing_flag = True)
+                            self.sdn_props.was_new_lp_established.remove(lpid)
+                            lp_idx = self.sdn_props.lightpath_id_list.index(lpid)
+                            self.sdn_props.lightpath_id_list.pop(lp_idx)
+                            self.sdn_props.lightpath_bandwidth_list.pop(lp_idx)
+                            self.sdn_props.start_slot_list.pop(lp_idx)
+                            self.sdn_props.band_list.pop(lp_idx)
+                            self.sdn_props.core_list.pop(lp_idx)
+                            self.sdn_props.end_slot_list.pop(lp_idx)
+                            self.sdn_props.xt_list.pop(lp_idx)
+                            self.sdn_props.bandwidth_list.pop(lp_idx)
+                            self.sdn_props.modulation_list.pop(lp_idx)
                     self.sdn_props.num_trans = 1
                     self.sdn_props.is_sliced = False
+                    self.sdn_props.was_partially_routed = False
+                    self.sdn_props.remaining_bw = int(self.sdn_props.bandwidth)
                     self.sdn_props.was_new_lp_established = list()
+
                     break
             else:
                 # mod_format = get_path_mod(mods_dict=mods_dict, path_len=path_len)
