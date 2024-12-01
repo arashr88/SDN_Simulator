@@ -25,6 +25,7 @@ class Engine:
         self.reqs_dict = None
         self.reqs_status_dict = dict()
         self.lightpath_status_dict = dict()
+        self.transponder_usage_dict = dict()
 
         self.iteration = 0
         self.topology = nx.Graph()
@@ -86,6 +87,19 @@ class Engine:
                     "remaining_bandwidth": sdn_props.lightpath_bandwidth_list[lp_cnt] - int(sdn_props.bandwidth_list[lp_cnt]),
                     'requests_dict':{self.reqs_dict[curr_time]['req_id']: int(sdn_props.bandwidth_list[lp_cnt])},
                 }
+            for node in [sdn_props.source, sdn_props.destination]:
+
+                if node not in self.transponder_usage_dict:
+                    raise KeyError(f"Node '{node}' not found in transponder usage dictionary.")
+                
+                required_transponders = sdn_props.num_trans
+                available = self.transponder_usage_dict[node]["available_transponder"]
+                if available >= required_transponders:
+                    self.transponder_usage_dict[node]["available_transponder"] -= required_transponders
+                else:
+                    self.transponder_usage_dict[node]["available_transponder"] = 0
+                    self.transponder_usage_dict[node]["total_transponder"] += required_transponders - available
+
 
     def update_release_param(self, curr_time: float):
         for req_key, req_value in self.reqs_dict[curr_time].items():
@@ -135,6 +149,7 @@ class Engine:
                                   force_mod_format=force_mod_format)
         self.net_spec_dict = self.sdn_obj.sdn_props.net_spec_dict
         self.lightpath_status_dict = self.sdn_obj.sdn_props.lightpath_status_dict 
+        self.transponder_usage_dict = self.sdn_obj.sdn_props.transponder_usage_dict
         self.update_arrival_params(curr_time=curr_time)
 
     def handle_release(self, curr_time: float):
@@ -150,6 +165,7 @@ class Engine:
             self.sdn_obj.handle_event(req_dict=self.reqs_dict[curr_time], request_type='release')
             self.net_spec_dict = self.sdn_obj.sdn_props.net_spec_dict
             self.lightpath_status_dict = self.sdn_obj.sdn_props.lightpath_status_dict
+            self.transponder_usage_dict = self.sdn_obj.sdn_props.transponder_usage_dict
         # Request was blocked, nothing to release
         else:
             pass
@@ -188,6 +204,7 @@ class Engine:
         self.sdn_obj.sdn_props.net_spec_dict = self.net_spec_dict
         self.sdn_obj.sdn_props.topology = self.topology
         self.sdn_obj.sdn_props.lightpath_status_dict = self.lightpath_status_dict 
+        self.sdn_obj.sdn_props.transponder_usage_dict = self.transponder_usage_dict
 
     def generate_requests(self, seed: int):
         """
@@ -199,6 +216,30 @@ class Engine:
         # seed = 0
         self.reqs_dict = get_requests(seed=seed, engine_props=self.engine_props)
         self.reqs_dict = dict(sorted(self.reqs_dict.items(), key=lambda x: x[0][1]))
+
+    def initialize_transponder_usage_dict(self):
+        """
+        Initializes the transponder usage dictionary for all core nodes in the network.
+
+        This method creates a dictionary where each node is assigned an entry
+        with `available_transponder` and `total_transponder` both set to 0.
+
+        Updates:
+            self.transponder_usage_dict (dict): A dictionary with the node names as keys 
+                                                and their transponder usage details as values.
+        """
+        nodes_list = (
+            list(self.engine_props['topology_info']['nodes'].keys())
+            if self.engine_props['is_only_core_node']
+            else self.engine_props['core_nodes']
+        )
+
+        self.transponder_usage_dict = {
+            node: {"available_transponder": 0, "total_transponder": 0}
+            for node in nodes_list
+        }
+        self.sdn_obj.sdn_props.transponder_usage_dict  = self.transponder_usage_dict 
+
 
     def handle_request(self, curr_time: float, req_num: int):
         """
@@ -239,7 +280,14 @@ class Engine:
         :param base_fp: The base file path to save output statistics.
         """
         self.stats_obj.get_blocking()
-        self.stats_obj.end_iter_update()
+        if self.engine_props["transponder_usage_per_node"]:
+            total_transponders = sum(
+            node_info["total_transponder"]
+                for node_info in self.transponder_usage_dict.values()
+            )
+        else:
+            total_transponders = None
+        self.stats_obj.end_iter_update(total_transponders = total_transponders)
         # Some form of ML/RL is being used, ignore confidence intervals for training and testing
         if not self.engine_props['is_training']:
             resp = bool(self.stats_obj.get_conf_inter())
@@ -259,7 +307,9 @@ class Engine:
         self.lightpath_status_dict = dict()
         self.sdn_obj.sdn_props.lightpath_status_dict = dict()
         self.sdn_obj.grooming_obj.grooming_props.lightpath_status_dict = dict()
+        self.sdn_obj.sdn_props.transponder_usage_dict = dict()
         self.reqs_status_dict = dict()
+        self.transponder_usage_dict = dict()
 
 
     def init_iter(self, iteration: int):
@@ -291,6 +341,8 @@ class Engine:
         
         self.reset()
         self.generate_requests(seed)
+        if self.engine_props["transponder_usage_per_node"]:
+            self.initialize_transponder_usage_dict()
 
     def run(self):
         """
