@@ -9,7 +9,7 @@ class SNRProps:
         self.light_frequency = 1.9341 * 10 ** 14  # Center light frequency
         self.plank = 6.62607004e-34  # Plank's constant
         self.req_bit_rate = 12.5  # Request bit rate
-        self.req_snr = 8.5  # Request signal to noise ratio value
+        self.req_snr = {'QPSK':8.5}  # Request signal to noise ratio value
         self.nsp = 1.8  # Noise spectral density
 
         self.center_freq = None  # Center frequency for current request
@@ -24,6 +24,8 @@ class SNRProps:
         self.link_dict = None  # Dictionary of links for calculating various metrics
         self.mod_format_mapping_dict = None # Dictionary of Modulation formats for precalculated SNR
         self.bw_mapping_dict = None # Dictionary of Modulation formats to calculate the supported bit ratre for fixed grid
+        self.mf_spectral_efficiency_dict = {"64-QAM":6, "32-QAM":5, "16-QAM":4, "8-QAM":3, "QPSK":2, "BPSK":1 }
+        
 
     def __repr__(self):
         return f"SNRProps({self.__dict__})"

@@ -22,6 +22,9 @@ def create_pt(cores_per_link: int, net_spec_dict: dict):
         'mode_coupling_co': 4.0e-4,
         'propagation_const': 4e6,
         'core_pitch': 4e-5,
+        'frequency_start_c': 3e8 / 1565e-9,
+        'frequency_end_c':  ((3e8 / 1565e-9)+ 4.0e12),
+        'c_band_bw': 4.0e12,
     }
 
     topology_dict = {
