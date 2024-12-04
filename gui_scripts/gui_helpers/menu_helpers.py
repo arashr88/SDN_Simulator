@@ -94,10 +94,17 @@ class MenuCreator:
         edit_menu_obj = self.menu_bar_obj.addMenu('Edit')
         return edit_menu_obj
 
-    def create_help_menu(self):
+    def create_help_menu(self) -> qtw.QMenu:
         """
         Creates the help menu section.
         """
+        help_menu_obj = self.menu_bar_obj.addMenu('Help')
+        # add about action
+        about_action = self.menu_bar_action_handler_obj.create_about_action()
+
+        help_menu_obj.addAction(about_action)
+
+        return help_menu_obj
 
     def create_plot_menu(self) -> qtw.QMenu:
         """
