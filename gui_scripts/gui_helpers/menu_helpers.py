@@ -87,10 +87,12 @@ class MenuCreator:
 
         return file_menu_obj
 
+    def create_edit_menu(self) -> qtw.QMenu:
         """
         Creates the edit menu section.
         """
-        self.edit_menu_obj = self.menu_bar_obj.addMenu('&Edit')
+        edit_menu_obj = self.menu_bar_obj.addMenu('Edit')
+        return edit_menu_obj
 
     def create_help_menu(self):
         """
