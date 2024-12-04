@@ -234,6 +234,18 @@ class MenuActionHandler:
         export_plot.triggered.connect(self._export_plot_cb)
         return export_plot
 
+    def create_about_action(self) -> qtw.QAction:
+        """
+        Create action for displaying about section.
+
+        :param : None
+        :type : None
+        :return : Object representing the "About" action
+        :rtype : QtWidgets.QAction
+        """
+        about_action = qtw.QAction("About", self.menu_bar_obj)
+        return about_action
+
     def _load_config_file(self):
         """
         Loads a configuration file from the user's system.
