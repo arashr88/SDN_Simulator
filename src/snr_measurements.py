@@ -233,7 +233,7 @@ class SnrMeasurements:
 
         total_snr = 10 * math.log10(1 / total_snr)
 
-        resp = total_snr > self.snr_props.req_snr
+        resp = total_snr > self.snr_props.req_snr['QPSK']
         return resp, p_xt
 
     def check_adjacent_cores(self, link_tuple: tuple):
@@ -422,6 +422,89 @@ class SnrMeasurements:
         return mod_format, supported_bw, SNR_val
 
 
+    def check_gsnr(self):
+        """
+        Calculate and check the SNR of Lightpath.
+
+        :return: Whether the SNR threshold can be met, SNR value, Suppoted bitrate.
+        :rtyp
+        """
+
+        BW_mapping = {
+        "64-QAM": 600,
+        "32-QAM": 500,
+        "16-QAM": 400,
+        "8-QAM": 300,
+        "QPSK": 200,
+        "BPSK": 100
+        }
+
+        GSNR_Path_AseNLI = 0
+        GSNR_link_AseNLI_dB = []
+        GSNR_span_AseNLI_dB = []
+        for link_num in range(0, len(self.spectrum_props.path_list) - 1):
+            source = self.spectrum_props.path_list[link_num]
+            dest = self.spectrum_props.path_list[link_num + 1]
+            self.link_id = self.sdn_props.net_spec_dict[(source, dest)]['link_num']
+            self.snr_props.length = self.engine_props['topology_info']['links'][self.link_id]['span_length']
+            self.snr_props.link_dict = self.engine_props['topology_info']['links'][self.link_id]['fiber']
+            center_freq = self.snr_props.link_dict['frequency_start_c'] + self.spectrum_props.start_slot * self.engine_props['bw_per_slot'] * 10 ** 9
+            center_freq += ((self.num_slots * self.engine_props['bw_per_slot']) / 2) * 10 ** 9
+            self.snr_props.bandwidth = self.num_slots * self.engine_props['bw_per_slot'] * 10 ** 9
+            GSNR_link_AseNLI = 0
+
+            self.snr_props.num_span =  math.ceil(self.engine_props['topology_info']['links'][self.link_id]['length'] / self.snr_props.length)
+            p_ase_span = self.snr_props.bandwidth * self.snr_props.plank * center_freq * self.snr_props.nsp
+            p_ase_span *= (math.exp(self.snr_props.link_dict['attenuation'] * self.snr_props.length * 10 ** 3) - 1)
+            L_eff = (1 - np.exp(-2 * self.snr_props.link_dict['attenuation'] * self.snr_props.length * 10 ** 3)) / (2 * self.snr_props.link_dict['attenuation'])
+            L_eff_a = 1 / (2 * self.snr_props.link_dict['attenuation'])
+
+            self.channels_list = []
+            sum_phi = 0
+            for _ in range(self.snr_props.num_span):
+                for slot_index in range(self.engine_props['c_band']):
+                    curr_link = self.sdn_props.net_spec_dict[(source, dest)]['cores_matrix']['c']
+                    req_id = curr_link[self.spectrum_props.core_num][slot_index]
+
+                    # Spectrum is occupied
+                    if (req_id > 0 and req_id not in self.channels_list) or slot_index == self.spectrum_props.start_slot:
+                        channel_mod = None
+                        if req_id > 0:
+                            for key, value in self.sdn_props.lightpath_status_dict.items():
+                                if req_id in value:
+                                    channel_mod = value[req_id]['mod_format']
+                            channel_bw = len(np.where(req_id == curr_link[self.spectrum_props.core_num])[0])
+                            self.channels_list.append(req_id)
+                        else:
+                            channel_bw = self.num_slots
+                        
+                        channel_bw *= self.engine_props['bw_per_slot']
+                        channel_freq = self.snr_props.link_dict['frequency_start_c'] + ((slot_index * self.engine_props['bw_per_slot']) + (channel_bw / 2)) * 10 ** 9
+                        channel_bw *= 10 ** 9
+                        channel_psd = self.engine_props['input_power'] / channel_bw
+                        if center_freq == channel_freq:
+                            phi = np.arcsinh(np.pi**2 * abs(self.snr_props.link_dict['dispersion']) * self.snr_props.bandwidth **2 / (4 * self.snr_props.link_dict['attenuation']))
+                        else:
+                            phi = (
+                                np.arcsinh((np.pi**2) * abs(self.snr_props.link_dict['dispersion']) * L_eff_a * self.snr_props.bandwidth * (channel_freq - center_freq + (channel_bw * 0.5))) -
+                                np.arcsinh((np.pi**2) * abs(self.snr_props.link_dict['dispersion']) * L_eff_a * self.snr_props.bandwidth * (channel_freq - center_freq - (channel_bw * 0.5))) -
+                                (self.engine_props['phi'][channel_mod] * (channel_bw / abs(channel_freq - center_freq)) * (5 / 3) * (L_eff / (self.snr_props.length * 10 ** 3)))
+                            )
+                        sum_phi += phi
+                P_NLI_span = (self.engine_props['input_power'] / self.snr_props.bandwidth)**3 * (8 / (27 * np.pi * abs(self.snr_props.link_dict['dispersion']))) * self.snr_props.link_dict['non_linearity']**2 * L_eff * sum_phi * self.snr_props.bandwidth
+                GSNR_span_AseNLI_dB.append(10 * np.log10(self.engine_props['input_power'] / (p_ase_span + P_NLI_span)))
+                GSNR_link_AseNLI += (self.engine_props['input_power'] / (p_ase_span + P_NLI_span))**-1
+            GSNR_link_AseNLI_dB.append(10 * np.log10(GSNR_link_AseNLI**-1))
+            GSNR_Path_AseNLI += GSNR_link_AseNLI
+        GSNR_LP_dB = 10 * np.log10(1 / GSNR_Path_AseNLI)
+        resp = GSNR_LP_dB > self.snr_props.req_snr['QPSK']
+        
+        if self.engine_props['fixed_grid']:
+            # bw_resp = self.snr_props.bandwidth * self.snr_props.mf_spectral_efficiency_dict[self.spectrum_props.modulation] / 10 ** 9
+            bw_resp = BW_mapping[self.spectrum_props.modulation]
+        else:
+            bw_resp = int(self.sdn_props.bandwidth)
+        return resp, GSNR_LP_dB, bw_resp
 
     def handle_snr(self, path_index):
         """
@@ -435,6 +518,8 @@ class SnrMeasurements:
             snr_check, xt_cost = self.check_snr()
         elif self.engine_props['snr_type'] == "xt_calculation":
             snr_check, xt_cost = self.check_xt()
+        elif self.engine_props['snr_type'] == "gsnr":
+            snr_check, xt_cost, bw_resp = self.check_gsnr()
         elif self.engine_props['snr_type'] == "snr_e2e_external_resources":
             snr_check, xt_cost, bw_resp = self.check_snr_ext(path_index)
         else:
