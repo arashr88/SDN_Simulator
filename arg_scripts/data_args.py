@@ -76,5 +76,21 @@ ARASH_MOD_ASSUMPTIONS = {
         "16-QAM": {"max_length": 41000, "slots_needed": 1},
         "32-QAM": {"max_length": 41210, "slots_needed": 1},
         "64-QAM": {"max_length": 41460, "slots_needed": 1}
+    },
+    "700": {
+        "BPSK": {"max_length": 40660, "slots_needed": 1},
+        "QPSK": {"max_length": 40670, "slots_needed": 1},
+        "8-QAM": {"max_length": 40800, "slots_needed": 1},
+        "16-QAM": {"max_length": 41000, "slots_needed": 1},
+        "32-QAM": {"max_length": 41210, "slots_needed": 1},
+        "64-QAM": {"max_length": 41460, "slots_needed": 1}
+    },
+    "800": {
+        "BPSK": {"max_length": 40660, "slots_needed": 1},
+        "QPSK": {"max_length": 40670, "slots_needed": 1},
+        "8-QAM": {"max_length": 40800, "slots_needed": 1},
+        "16-QAM": {"max_length": 41000, "slots_needed": 1},
+        "32-QAM": {"max_length": 41210, "slots_needed": 1},
+        "64-QAM": {"max_length": 41460, "slots_needed": 1}
     }
 }
