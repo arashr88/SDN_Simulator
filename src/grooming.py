@@ -88,7 +88,8 @@ class Grooming:
         release_lp = []
         light_id = tuple(sorted([self.sdn_props.source, self.sdn_props.destination]))
 
-        for index, lp_id in enumerate(self.sdn_props.lightpath_id_list):
+        for lp_id in self.sdn_props.lightpath_id_list[:]: 
+            index = self.sdn_props.lightpath_id_list.index(lp_id)
             req_bw = self.sdn_props.lightpath_status_dict[light_id][lp_id]['requests_dict'][self.sdn_props.req_id]
             self.sdn_props.lightpath_status_dict[light_id][lp_id]['requests_dict'].pop(self.sdn_props.req_id)
             self.sdn_props.lightpath_status_dict[light_id][lp_id]['remaining_bandwidth'] += req_bw
