@@ -4,6 +4,7 @@ import numpy as np
 import networkx as nx
 
 from arg_scripts.snr_args import SNRProps
+from helper_scripts.sim_helpers import sort_nested_dict_vals
 
 
 # fixme: Only works for seven cores
@@ -431,12 +432,12 @@ class SnrMeasurements:
         """
 
         BW_mapping = {
-        "64-QAM": 600,
-        "32-QAM": 500,
-        "16-QAM": 400,
-        "8-QAM": 300,
-        "QPSK": 200,
-        "BPSK": 100
+        "64-QAM": 800,
+        "32-QAM": 700,
+        "16-QAM": 600,
+        "8-QAM": 500,
+        "QPSK": 400,
+        "BPSK": 200
         }
 
         GSNR_Path_AseNLI = 0
@@ -473,11 +474,17 @@ class SnrMeasurements:
                             for key, value in self.sdn_props.lightpath_status_dict.items():
                                 if req_id in value:
                                     channel_mod = value[req_id]['mod_format']
+
                             channel_bw = len(np.where(req_id == curr_link[self.spectrum_props.core_num])[0])
                             self.channels_list.append(req_id)
                         else:
                             channel_bw = self.num_slots
-                        
+                        if  channel_mod is None and req_id >0:
+                            if req_id in self.sdn_props.lightpath_id_list:
+                                idx = self.sdn_props.lightpath_id_list.index(req_id)
+                                channel_mod = self.sdn_props.modulation_list[idx]
+                            else:
+                                raise NotImplementedError(f"Unexpected lightpath id: {req_id}")
                         channel_bw *= self.engine_props['bw_per_slot']
                         channel_freq = self.snr_props.link_dict['frequency_start_c'] + ((slot_index * self.engine_props['bw_per_slot']) + (channel_bw / 2)) * 10 ** 9
                         channel_bw *= 10 ** 9
@@ -497,13 +504,30 @@ class SnrMeasurements:
             GSNR_link_AseNLI_dB.append(10 * np.log10(GSNR_link_AseNLI**-1))
             GSNR_Path_AseNLI += GSNR_link_AseNLI
         GSNR_LP_dB = 10 * np.log10(1 / GSNR_Path_AseNLI)
-        resp = GSNR_LP_dB > self.snr_props.req_snr['QPSK']
-        
-        if self.engine_props['fixed_grid']:
-            # bw_resp = self.snr_props.bandwidth * self.snr_props.mf_spectral_efficiency_dict[self.spectrum_props.modulation] / 10 ** 9
-            bw_resp = BW_mapping[self.spectrum_props.modulation]
-        else:
-            bw_resp = int(self.sdn_props.bandwidth)
+        resp = GSNR_LP_dB >= self.snr_props.req_snr[self.spectrum_props.modulation]
+        bw_resp = 0
+        if resp:
+            if self.engine_props['fixed_grid']:
+                if not self.spectrum_props.slicing_flag:
+                    if BW_mapping[self.spectrum_props.modulation] >= int(self.sdn_props.bandwidth):
+                        bw_resp = BW_mapping[self.spectrum_props.modulation]
+                    else:
+                        resp = False
+                else:
+                    bw_resp = BW_mapping[self.spectrum_props.modulation]
+                    
+            else:
+                bw_resp = int(self.sdn_props.bandwidth)
+
+        if self.spectrum_props.slicing_flag and self.engine_props['fixed_grid'] and self.engine_props['dynamic_lps']:
+            mod_formats_dict = sort_nested_dict_vals(original_dict=self.sdn_props.mod_formats_dict,
+                                            nested_key='max_length')
+            force_mod_format = list(mod_formats_dict.keys())[::-1]
+            for mod in force_mod_format:
+                if GSNR_LP_dB >= self.snr_props.req_snr[mod]:
+                    resp = mod
+                    bw_resp = BW_mapping[mod]
+                    break
         return resp, GSNR_LP_dB, bw_resp
 
     def handle_snr(self, path_index):
@@ -537,6 +561,8 @@ class SnrMeasurements:
         self.num_slots = self.spectrum_props.end_slot - self.spectrum_props.start_slot + 1
         if self.engine_props['snr_type'] == "snr_e2e_external_resources":
             mod_format, bw, SNR_val = self.check_snr_ext_slicing(path_index)
+        elif self.engine_props['snr_type'] == "gsnr":
+            mod_format, SNR_val, bw = self.check_gsnr()
         else:
             raise NotImplementedError(f"Unexpected snr_type flag got: {self.engine_props['snr_type']}")
 
