@@ -57,7 +57,7 @@ class SDNController:
         
 
             light_id = tuple(sorted([self.sdn_props.path_list[0], self.sdn_props.path_list[-1]]))
-            if self.sdn_props.lightpath_status_dict[light_id][lightpath_id]['requests_dict']:
+            if self.sdn_props.lightpath_status_dict[light_id][lightpath_id]['requests_dict'] and self.engine_props['is_grooming_enabled']:
                 raise ValueError('The releasing lightpath are currently using')
             self.sdn_props.lightpath_status_dict[light_id].pop(lightpath_id)
 
@@ -319,6 +319,7 @@ class SDNController:
                     # fixme: Looping twice (Due to segment slicing flag)
                     if segment_slicing or force_slicing or forced_segments > 1:
                         force_slicing = True
+                        self.spectrum_obj.spectrum_props.slicing_flag = True
                         if self.engine_props['dynamic_lps']:
                             self._handle_dynamic_slicing(path_list= path_list, path_index= path_index, forced_segments= force_slicing )
                             if not self.sdn_props.was_routed:
@@ -337,6 +338,7 @@ class SDNController:
                         self.spectrum_obj.spectrum_props.forced_core = force_core
                         self.spectrum_obj.spectrum_props.path_list = path_list
                         self.spectrum_obj.spectrum_props.forced_band = forced_band
+                        self.spectrum_obj.spectrum_props.slicing_flag = False
                         self.spectrum_obj.get_spectrum(mod_format_list=mod_format_list, path_index = path_index)
                         # Request was blocked for this path
                         if self.spectrum_obj.spectrum_props.is_free is not True:
@@ -369,7 +371,7 @@ class SDNController:
                 continue
 
             if self.engine_props['can_partially_serve']: 
-                if self.sdn_props.remaining_bw != '0':
+                if self.sdn_props.remaining_bw < int(self.sdn_props.bandwidth):
                     self.sdn_props.was_partially_routed = True
             else:
                 if self.sdn_props.was_partially_groomed:
