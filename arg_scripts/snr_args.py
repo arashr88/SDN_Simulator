@@ -9,7 +9,7 @@ class SNRProps:
         self.light_frequency = 1.9341 * 10 ** 14  # Center light frequency
         self.plank = 6.62607004e-34  # Plank's constant
         self.req_bit_rate = 12.5  # Request bit rate
-        self.req_snr = {'QPSK':8.5}  # Request signal to noise ratio value
+        self.req_snr = {'BPSK': 3.71,'QPSK': 6.72, '8-QAM': 10.84, '16-QAM': 13.24, '32-QAM': 16.16, '64-QAM': 19.01}  # Request signal to noise ratio value
         self.nsp = 1.8  # Noise spectral density
 
         self.center_freq = None  # Center frequency for current request
