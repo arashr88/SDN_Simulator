@@ -245,6 +245,7 @@ class SpectrumAssignment:
 
         if self.engine_props['fixed_grid']:
             self.spectrum_props.slots_needed = 1
+            self.spectrum_props.slicing_flag = True
             self._get_spectrum()
             if self.spectrum_props.is_free:
                 mod_format, bw, snr_val = self.snr_obj.handle_snr_dynamic_slicing(path_index)
