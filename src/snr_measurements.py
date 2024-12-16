@@ -207,7 +207,7 @@ class SnrMeasurements:
             psd_ase *= (math.exp(self.snr_props.link_dict['attenuation'] * self.snr_props.length * 10 ** 3) - 1)
 
             if self.engine_props['xt_noise']:
-                # fixme
+                # fixme number of adjacent set to a constant negative 100
                 p_xt = self._calculate_pxt(num_adjacent=-100)
             else:
                 p_xt = 0

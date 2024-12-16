@@ -34,7 +34,7 @@ class SpectrumAssignment:
                     self.spec_help_obj.start_index = start_index
                     self.spec_help_obj.end_index = end_index
                     self.spec_help_obj.core_num = channel_dict['core']
-                    # TODO: This needs to be double checked
+                    # TODO: This needs to be double checked to ensure the correct band is being used
                     self.spec_help_obj.curr_band = channel_dict['band']
                     self.spec_help_obj.check_other_links()
 
@@ -43,7 +43,7 @@ class SpectrumAssignment:
                     self.spectrum_props.start_slot = start_index
                     self.spectrum_props.end_slot = end_index + self.engine_props['guard_slots']
                     self.spectrum_props.core_num = channel_dict['core']
-                    # TODO: This needs to be checked
+                    # TODO: This needs to be double checked to ensure the correct band is being used
                     self.spectrum_props.curr_band = channel_dict['band']
                     return
 

@@ -176,9 +176,9 @@ class SDNController:
             route_matrix = self.route_obj.route_props.paths_matrix
         else:
             route_matrix = force_route_matrix
-            # TODO: This is an inconsistency
+            # TODO: This is an inconsistency when forcing a modulation format
             self.route_obj.route_props.mod_formats_matrix = [force_mod_format]
-            # TODO: This must be fixed
+            # TODO: This must be fixed it is a constant zero
             self.route_obj.route_props.weights_list = [0]
         route_time = time.time() - start_time
 
