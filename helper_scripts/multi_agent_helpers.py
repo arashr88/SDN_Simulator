@@ -10,7 +10,7 @@ from .bandit_helpers import UCBBandit, get_q_table
 EPISODIC_STRATEGIES = ['exp_decay', 'linear_decay']
 
 
-# TODO: Update UML class (When PR is created)
+# TODO: Update UML class
 class HyperparamConfig:  # pylint: disable=too-few-public-methods
     """
     Controls all hyperparameter starts, ends, and episodic and or time step modifications.
@@ -78,25 +78,17 @@ class HyperparamConfig:  # pylint: disable=too-few-public-methods
         probabilities = exp_values / np.sum(exp_values)
         return probabilities
 
-    # TODO: Does not work for bandits due to a prime (next state)
     def _softmax_eps(self):
         """
         Softmax epsilon update rule.
         """
         raise NotImplementedError
-        # q_vals_list = list(self.values[self.state_action_pair])
-        # softmax_probs = self._softmax(q_vals_list=q_vals_list)
-        # self.curr_epsilon = self.epsilon_start * np.sum(softmax_probs)
 
-    # TODO: Does not work for bandits due to a prime (next state)
     def _softmax_alpha(self):
         """
         Softmax alpha update rule.
         """
         raise NotImplementedError
-        # q_vals_list = list(self.values.values())
-        # softmax_probs = self._softmax(q_vals_list=q_vals_list)
-        # self.curr_alpha = self.alpha_start * np.sum(softmax_probs)
 
     def _reward_based_eps(self):
         """
@@ -168,8 +160,7 @@ class HyperparamConfig:  # pylint: disable=too-few-public-methods
                 (self.alpha_start - self.alpha_end) * (self.total_iters - self.iteration) / self.total_iters
         )
 
-    # TODO: Types?
-    def update_timestep_data(self, state_action_pair, action_index):
+    def update_timestep_data(self, state_action_pair: tuple, action_index: int):
         """
         Updates data structures used for updating alpha and epsilon.
         """
@@ -248,7 +239,7 @@ class PathAgent:
         """
         Sets up the environment for the path agent.
         """
-        # TODO: Double check this
+        # TODO: Test reward penalty list
         self.reward_penalty_list = np.zeros(self.engine_props['max_iters'])
         self.hyperparam_obj = HyperparamConfig(engine_props=self.engine_props, rl_props=self.rl_props, is_path=True)
         if self.path_algorithm == 'q_learning':
@@ -261,8 +252,7 @@ class PathAgent:
         else:
             raise NotImplementedError
 
-    # TODO: Do we still want to use path length?
-    def get_reward(self, was_allocated: bool, path_length: int):  # pylint: disable=unused-argument
+    def get_reward(self, was_allocated: bool, path_length: int = None):  # pylint: disable=unused-argument
         """
         Get the current reward for the last agent's action.
 
@@ -346,7 +336,7 @@ class PathAgent:
         if len(self.rl_props.chosen_path_list) == 0:
             raise ValueError('The chosen path can not be None')
 
-    # TODO: Ideally q-learning should be like this (agent_obj.something)
+    # TODO: Change q-learning to be like this (agent_obj.something)
     def _bandit_route(self, route_obj: object):
         paths_list = route_obj.route_props.paths_matrix
         source = paths_list[0][0]
@@ -541,7 +531,7 @@ class CoreAgent:
             self.agent_obj.props.cores_matrix = np.load(model_path, allow_pickle=True)
 
 
-# TODO: No longer supported/functional
+# TODO: This class is no longer supported
 class SpectrumAgent:
     """
     A class that handles everything related to spectrum assignment in reinforcement learning simulations.

@@ -24,9 +24,10 @@ class PlotHelpers:  # pylint: disable=too-few-public-methods
         self.sim_num = None
         self.data_dict = None
 
-    # TODO: Skipping function for new plot args, since this needs to be updated and only works for q_learning
+    # TODO: This function is only partially functional for q-learning
     def _find_ai_stats(self, cores_per_link: int):
-        # TODO: Generalize, also make sure to save date of simulation!
+        # TODO: Generalize
+        # TODO: Save the date of a simulation
         ai_fp = os.path.join('..', 'logs', 'ql', self.data_dict['network'], self.data_dict['date'], self.time)
         ai_fp = os.path.join(ai_fp, f"e{self.erlang}_params_c{cores_per_link}.json")
 
@@ -100,7 +101,7 @@ class PlotHelpers:  # pylint: disable=too-few-public-methods
                 modulations_dict[bandwidth].setdefault(modulation, []).append(mean(mod_usages))
 
     def _find_sim_info(self, input_dict: dict):
-        # TODO: Does not support all slots
+        # TODO: Does not support all bands/slots
         info_item_list = ['holding_time', 'cores_per_link', 'c_band', 'network', 'num_requests',
                           'cores_per_link', 'max_segments']
         self.plot_props = self.plot_props.plot_dict[self.time][self.sim_num].update_info_dict(
@@ -169,10 +170,6 @@ class PlotHelpers:  # pylint: disable=too-few-public-methods
                     self._find_mod_info()
                     self._find_snapshot_usage()
                     self._find_misc_stats()
-                    # TODO: Commented out
-                    if input_dict['path_algorithm'] is not None and input_dict['path_algorithm'] != 'None':
-                        pass
-                        # self._find_ai_stats(cores_per_link=input_dict['cores_per_link'])
 
     def get_file_info(self, sims_info_dict: dict):
         """

@@ -663,7 +663,7 @@ def modify_multiple_json_values(file_path: str, update_list: list):
     :param update_list: A list of tuples containing keys and their new values to be updated.
                         Example: [('key1', 'new_value1'), ('key2', 'new_value2')]
     """
-    with open(file_path, 'r') as json_file:
+    with open(file_path, 'r', encoding='utf-8') as json_file:
         data = json.load(json_file)
 
     for key, new_value in update_list:
@@ -672,5 +672,5 @@ def modify_multiple_json_values(file_path: str, update_list: list):
         else:
             raise KeyError(f"Key '{key}' not found in the JSON file.")
 
-    with open(file_path, 'w') as json_file:
+    with open(file_path, 'w', encoding='utf-8') as json_file:
         json.dump(data, json_file, indent=4)
