@@ -23,6 +23,7 @@ from arg_scripts.rl_args import VALID_SPECTRUM_ALGORITHMS, get_optuna_hyperparam
 
 # TODO: Update tests
 # TODO: No support for core or spectrum assignment
+# TODO: Does not support multi-band
 
 class SimEnv(gym.Env):  # pylint: disable=abstract-method
     """
@@ -95,7 +96,6 @@ class SimEnv(gym.Env):  # pylint: disable=abstract-method
         else:
             self.rl_help_obj.rl_props.forced_index = None
 
-        # TODO: Definitely make sure this is a pointer (comparing results)
         self.rl_help_obj.rl_props = self.rl_props
         self.rl_help_obj.engine_obj = self.engine_obj
         self.rl_help_obj.handle_releases()
@@ -158,7 +158,6 @@ class SimEnv(gym.Env):  # pylint: disable=abstract-method
             self.route_obj.get_route()
 
         self.path_agent.get_route(route_obj=self.route_obj)
-        # TODO: Update to chosen path list, be very careful as this affects results easily for the agents if done wrong
         self.rl_help_obj.rl_props.chosen_path_list = [self.rl_props.chosen_path_list]
         self.route_obj.route_props.paths_matrix = self.rl_help_obj.rl_props.chosen_path_list
         self.rl_props.core_index = None
@@ -202,7 +201,7 @@ class SimEnv(gym.Env):  # pylint: disable=abstract-method
         self.route_obj.sdn_props = self.rl_props.mock_sdn_dict
         self.route_obj.engine_props['route_method'] = 'shortest_path'
         self.route_obj.get_route()
-        # TODO: Change name in rl props eventually
+        # TODO: Change name in rl props
         self.rl_props.paths_list = self.route_obj.route_props.paths_matrix
         self.rl_props.chosen_path = self.route_obj.route_props.paths_matrix
         self.rl_props.path_index = 0
@@ -447,7 +446,7 @@ def _run_rl_zoo(sim_dict: dict):
 def _run_testing(env: object, sim_dict: dict):
     model = _get_trained_model(env=env, sim_dict=sim_dict)
     _run_iters(env=env, sim_dict=sim_dict, is_training=False, model=model)
-    # TODO: Hard coded
+    # fixme: Hard coded
     save_fp = os.path.join('logs', 'ppo', env.modified_props['network'], env.modified_props['date'],
                            env.modified_props['sim_start'], 'ppo_model.zip')
     model.save(save_fp)
