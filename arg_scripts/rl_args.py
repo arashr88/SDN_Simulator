@@ -2,8 +2,8 @@
 import optuna
 
 
-# TODO: Only works for path algorithm
-# TODO: Fine-tine 'c' for UCB bandit?
+# TODO: Support only for path selection for all functions
+# TODO: UCB Bandit 'c' variable is a constant
 def get_optuna_hyperparams(sim_dict: dict, trial: optuna.trial):
     """
     Suggests hyperparameters for the Optuna trial.
@@ -129,7 +129,7 @@ class BanditProps:
         return f"BanditProps({self.__dict__})"
 
 
-# TODO: Add support for deep reinforcement learning agent
+# TODO: Add support for DRL agents
 class PPOProps:
     """
     Not implemented at this time.

@@ -3,14 +3,11 @@ import copy
 import os
 
 
-# TODO: Update standards and guidelines to say we should use classes and the must end with 'Props' or 'Args'
 class PlotProps:
     """
     Properties used in the main plot_stats.py script.
     """
 
-    # TODO: Add commenting these to the standards and guidelines
-    # TODO: Also, double check standards and guidelines for the 'props' section
     def __init__(self):
         self.sims_info_dict = None  # Contains all necessary information for each simulation run to be plotted
         self.plot_dict = None  # Contains only information related to plotting for each simulation run

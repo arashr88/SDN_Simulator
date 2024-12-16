@@ -1,6 +1,7 @@
 import ast
 
 
+# TODO: Create a test to ensure command line and config options are both the same
 def str_to_bool(string: str):
     """
     Convert any giving string to a boolean.
