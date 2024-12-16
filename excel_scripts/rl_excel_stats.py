@@ -161,7 +161,7 @@ for network in NETWORK_LIST:
         filter_dict = {
             'and_filter_list': [
                 ['arrival_start', arrival_rate],
-                # TODO: Now filter function doesn't work
+                # TODO: Filter function has limited functionality
                 # ['max_iters', 200],
             ],
             'or_filter_list': [
@@ -175,10 +175,10 @@ for network in NETWORK_LIST:
         sims_info_dict = find_times(dates_dict={'1014': network, '1015': network},
                                     filter_dict=filter_dict)
 
-        is_empty = True
+        is_empty = True  # pylint: disable=invalid-name
         for _, data_list in sims_info_dict.items():
             if len(data_list) > 0:
-                is_empty = False
+                is_empty = False  # pylint: disable=invalid-name
                 break
 
         if is_empty:
