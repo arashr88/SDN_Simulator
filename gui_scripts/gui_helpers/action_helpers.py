@@ -164,7 +164,7 @@ class ActionHelpers:
         network_selection_dialog.move(dialog_pos)
 
         network_selection_input = QtWidgets.QInputDialog()
-        # TODO: Hard coded, should read potential files we have?
+        # TODO: Hard coded, should read the raw data directory or have a constants file
         items = ['USNet', 'NSFNet', 'Pan-European']
         net_name, valid_net_name = network_selection_input.getItem(
             network_selection_dialog, "Choose a network type:",
