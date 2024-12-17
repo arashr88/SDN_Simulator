@@ -169,7 +169,7 @@ class SimStats:
             data_type = getattr(self.stats_props, stat_key)
             if isinstance(data_type, list):
                 # Only reset sim_block_list when we encounter a new traffic volume
-                if self.iteration != 0 and stat_key in ['sim_block_list', 'sim_bit_rate_block_list']:
+                if self.iteration != 0 and stat_key in ['sim_block_list', 'sim_br_block_list']:
                     continue
                 setattr(self.stats_props, stat_key, list())
 
@@ -201,7 +201,7 @@ class SimStats:
             bit_rate_blocking_prob = self.bit_rate_blocked / self.bit_rate_request
 
         self.stats_props.sim_block_list.append(blocking_prob)
-        self.stats_props.sim_bit_rate_block_list.append(bit_rate_blocking_prob)
+        self.stats_props.sim_br_block_list.append(bit_rate_blocking_prob)
     def _handle_iter_lists(self, sdn_data: object):
         for stat_key in sdn_data.stat_key_list:
             # TODO: Eventually change this name (sdn_data)
@@ -323,12 +323,12 @@ class SimStats:
         :rtype: bool
         """
         self.block_mean = mean(self.stats_props.sim_block_list)
-        self.bit_rate_block_mean = mean(self.stats_props.sim_bit_rate_block_list)
+        self.bit_rate_block_mean = mean(self.stats_props.sim_br_block_list)
         if len(self.stats_props.sim_block_list) <= 1:
             return False
         
         self.block_variance = variance(self.stats_props.sim_block_list)
-        self.bit_rate_block_variance = variance(self.stats_props.sim_bit_rate_block_list)
+        self.bit_rate_block_variance = variance(self.stats_props.sim_br_block_list)
 
         if self.block_mean == 0.0:
             return False
@@ -340,7 +340,7 @@ class SimStats:
             block_ci_percent = ((2 * block_ci_rate) / self.block_mean) * 100
             self.block_ci_percent = block_ci_percent
             # bit rate blcoking
-            bit_rate_block_ci = 1.96 * (math.sqrt(self.bit_rate_block_variance) / math.sqrt(len(self.stats_props.sim_bit_rate_block_list)))
+            bit_rate_block_ci = 1.96 * (math.sqrt(self.bit_rate_block_variance) / math.sqrt(len(self.stats_props.sim_br_block_list)))
             self.bit_rate_block_ci = bit_rate_block_ci
             bit_rate_block_ci_percent = ((2 * bit_rate_block_ci) / self.bit_rate_block_mean) * 100
             self.bit_rate_block_ci_percent = bit_rate_block_ci_percent
