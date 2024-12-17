@@ -7,7 +7,7 @@ class SDNProps:
 
     def __init__(self):
         self.path_list = None  # List of nodes for the current request
-        self.path_index = None # set index of path when set of path are computed
+        self.path_index = None # Index of selected path in the computed path set
         self.was_routed = None  # Flag to determine successful route
         self.topology = None  # Networkx topology
         self.net_spec_dict = None  # Current network spectrum database
