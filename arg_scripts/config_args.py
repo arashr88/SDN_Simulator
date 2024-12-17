@@ -63,7 +63,7 @@ ARASH_REQUIRED_OPTIONS = {
         'print_step': int,
         'fixed_grid': str_to_bool,
         'pre_calc_mod_selection': str_to_bool,
-        'spectrum_allocation_priority': str,
+        'spectrum_priority': str,
         'save_step': int,
     },
     'topology_settings': {
@@ -229,7 +229,7 @@ COMMAND_LINE_PARAMS = [
     ['fixed_grid', bool, ''],
     ['pre_calc_mod_selection', bool, ''],
     ['is_only_core_node', bool, ''],
-    ['spectrum_allocation_priority', str, ''],
+    ['spectrum_priority', str, ''],
     ['save_step', int, ''],
 
     # StableBaselines3 arguments
