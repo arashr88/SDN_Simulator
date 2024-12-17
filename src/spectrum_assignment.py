@@ -109,7 +109,7 @@ class SpectrumAssignment:
         # TODO: Cores matrix is now a dictionary, change name
         core_matrix, core_list, band_list = self._setup_first_last()
 
-        if self.engine_props['spectrum_allocation_priority'] == 'BSC':
+        if self.engine_props['spectrum_priority'] == 'BSC':
             
             for band_index in range(len(band_list)):  # pylint: disable=consider-using-enumerate
                 for core_arr, core_num in zip(core_matrix, core_list):
