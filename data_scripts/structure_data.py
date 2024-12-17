@@ -15,7 +15,7 @@ def assign_link_lengths(network_fp: str, node_pairs_dict: dict, constant_weight:
     with open(network_fp, 'r', encoding='utf-8') as file_obj:
         for line in file_obj:
             src, dest, link_len_str = line.strip().split('\t')
-            link_len = float(link_len_str) if not constant_weight else 1
+            link_len = float(link_len_str) if not constant_weight else 1.0
 
             if node_pairs_dict != {}:
                 src_dest_tuple = (node_pairs_dict[src], node_pairs_dict[dest])
