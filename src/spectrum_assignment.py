@@ -128,6 +128,28 @@ class SpectrumAssignment:
                     self.spec_help_obj.core_num = core_num
                     self.spec_help_obj.curr_band = band_list[band_index]
                     was_allocated = self.spec_help_obj.check_super_channels(open_slots_matrix=open_slots_matrix, flag=flag)
+                    # support FF for the spectrum meet the minimum gsnr requirments
+                    if self.engine_props['cores_per_link'] in [13, 19] and self.engine_props['snr_type'] == 'snr_e2e_external_resources':
+                        snr_result = self.snr_obj.handle_snr_dynamic_slicing(self.sdn_props.path_index)[0]
+                        break_outer_loop = False 
+
+                        if snr_result is None:
+                            for cnt_tmp, row in enumerate(open_slots_matrix):
+                                for cnt_tmp2, slot in enumerate(list(row)):
+                                    was_allocated = self.spec_help_obj.check_super_channels(open_slots_matrix=open_slots_matrix, flag=flag)
+                                    snr_result = self.snr_obj.handle_snr_dynamic_slicing(self.sdn_props.path_index)[0]
+                                    if snr_result is None:
+                                        if row:
+                                            open_slots_matrix[cnt_tmp].pop(0)                                        
+                                        if all(len(row1) == 0 for row1 in open_slots_matrix):
+                                            was_allocated = False
+                                            break
+                                    else:
+                                        was_allocated = True
+                                        break_outer_loop = True
+                                        break
+                                if break_outer_loop: 
+                                    break
                     if was_allocated:
                         return
         else:
@@ -148,6 +170,28 @@ class SpectrumAssignment:
                     self.spec_help_obj.core_num = core_num
                     self.spec_help_obj.curr_band = band_list[band_index]
                     was_allocated = self.spec_help_obj.check_super_channels(open_slots_matrix=open_slots_matrix, flag=flag)
+                    # support FF for the spectrum meet the minimum gsnr requirments
+                    if self.engine_props['cores_per_link'] in [13, 19] and self.engine_props['snr_type'] == 'snr_e2e_external_resources':
+                        snr_result = self.snr_obj.handle_snr_dynamic_slicing(self.sdn_props.path_index)[0]
+                        break_outer_loop = False 
+
+                        if snr_result is None:
+                            for cnt_tmp, row in enumerate(open_slots_matrix):
+                                for cnt_tmp2, slot in enumerate(list(row)):
+                                    was_allocated = self.spec_help_obj.check_super_channels(open_slots_matrix=open_slots_matrix, flag=flag)
+                                    snr_result = self.snr_obj.handle_snr_dynamic_slicing(self.sdn_props.path_index)[0]
+                                    if snr_result is None:
+                                        if row:
+                                            open_slots_matrix[cnt_tmp].pop(0)                                        
+                                        if all(len(row1) == 0 for row1 in open_slots_matrix):
+                                            was_allocated = False
+                                            break
+                                    else:
+                                        was_allocated = True
+                                        break_outer_loop = True
+                                        break
+                                if break_outer_loop: 
+                                    break
                     if was_allocated:
                         return
 
@@ -185,7 +229,7 @@ class SpectrumAssignment:
         self.spectrum_props.rev_cores_matrix = self.sdn_props.net_spec_dict[rev_link_tuple]['cores_matrix']
         self.spectrum_props.is_free = False
 
-    def get_spectrum(self, mod_format_list: list, slice_bandwidth: str = None, path_index: int = None):
+    def get_spectrum(self, mod_format_list: list, slice_bandwidth: str = None):
         """
         Controls the class, attempts to find an available spectrum.
 
@@ -215,7 +259,7 @@ class SpectrumAssignment:
             if self.spectrum_props.is_free:
                 self.spectrum_props.modulation = modulation
                 if self.engine_props['snr_type'] != 'None' and self.engine_props['snr_type'] is not None:
-                    snr_check, xt_cost = self.snr_obj.handle_snr(path_index)
+                    snr_check, xt_cost = self.snr_obj.handle_snr(self.sdn_props.path_index)
                     self.spectrum_props.xt_cost = xt_cost
                     if not snr_check:
                         self.spectrum_props.is_free = False
@@ -244,10 +288,16 @@ class SpectrumAssignment:
             self.spectrum_props.slots_needed = 1
             self._get_spectrum()
             if self.spectrum_props.is_free:
-                mod_format, bw = self.snr_obj.handle_snr_dynamic_slicing(path_index)
-                self.spectrum_props.modulation = mod_format
-                self.spectrum_props.is_free = True
-                self.sdn_props.block_reason = None
+                mod_format, bw, snr_val = self.snr_obj.handle_snr_dynamic_slicing(path_index)
+                if bw == 0:
+                    self.spectrum_props.is_free = False
+                    self.sdn_props.block_reason = "xt_threshold"
+                else:
+
+                    self.spectrum_props.modulation = mod_format
+                    self.spectrum_props.xt_cost = snr_val
+                    self.spectrum_props.is_free = True
+                    self.sdn_props.block_reason = None
                 return mod_format, bw
             else:
                 return 0, 0

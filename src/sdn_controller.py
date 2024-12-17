@@ -156,6 +156,7 @@ class SDNController:
         path_len = find_path_len(path_list=path_list, topology=self.engine_props['topology'])
         bw_mod_dict = sort_dict_keys(dictionary=self.engine_props['mod_per_bw'])
         self.spectrum_obj.spectrum_props.path_list = path_list
+        self.sdn_props.num_trans = 0
         while remaining_bw > 0:
             if self.engine_props['fixed_grid']:
                 self.sdn_props.was_routed = True
@@ -165,10 +166,12 @@ class SDNController:
                     dedicated_bw = bw if remaining_bw > bw else remaining_bw
                     self._update_req_stats(bandwidth=str(dedicated_bw))
                     remaining_bw -= bw
+                    self.sdn_props.num_trans += 1
                     self.sdn_props.is_sliced = True
                 else:
                     self.sdn_props.was_routed = False
                     self.sdn_props.block_reason = 'congestion'
+                    self.sdn_props.num_trans = 1
                     if remaining_bw != int(self.sdn_props.bandwidth):
                         self.release()
                     self.sdn_props.is_sliced = False
@@ -226,6 +229,7 @@ class SDNController:
             for path_index, path_list in enumerate(route_matrix):
                 if path_list is not False:
                     self.sdn_props.path_list = path_list
+                    self.sdn_props.path_index = path_index
                     mod_format_list = self.route_obj.route_props.mod_formats_matrix[path_index]
 
                     if ml_model is not None:
@@ -252,7 +256,7 @@ class SDNController:
                         self.spectrum_obj.spectrum_props.forced_core = force_core
                         self.spectrum_obj.spectrum_props.path_list = path_list
                         self.spectrum_obj.spectrum_props.forced_band = forced_band
-                        self.spectrum_obj.get_spectrum(mod_format_list=mod_format_list, path_index = path_index)
+                        self.spectrum_obj.get_spectrum(mod_format_list=mod_format_list)
                         # Request was blocked for this path
                         if self.spectrum_obj.spectrum_props.is_free is not True:
                             self.sdn_props.block_reason = 'congestion'

@@ -65,6 +65,7 @@ ARASH_REQUIRED_OPTIONS = {
         'pre_calc_mod_selection': str_to_bool,
         'spectrum_priority': str,
         'save_step': int,
+        'save_start_end_slots': str_to_bool,
     },
     'topology_settings': {
         'network': str,
@@ -72,6 +73,7 @@ ARASH_REQUIRED_OPTIONS = {
         'cores_per_link': int,
         'const_link_weight': str_to_bool,
         'is_only_core_node': str_to_bool,
+        'multi_fiber': str_to_bool,
     },
     'spectrum_settings': {
         'c_band': int,
@@ -229,8 +231,10 @@ COMMAND_LINE_PARAMS = [
     ['fixed_grid', bool, ''],
     ['pre_calc_mod_selection', bool, ''],
     ['is_only_core_node', bool, ''],
-    ['spectrum_priority', str, ''],
+    ['multi_fiber',  bool, ''],
+    ['spectrum_allocation_priority', str, ''],
     ['save_step', int, ''],
+    ['save_start_end_slots', bool, ''],    
 
     # StableBaselines3 arguments
     ['algo', str, ''],
