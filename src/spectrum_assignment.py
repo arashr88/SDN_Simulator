@@ -3,6 +3,7 @@ from operator import itemgetter
 
 import numpy as np
 
+from helper_scripts.sim_helpers import sort_nested_dict_vals
 from arg_scripts.spectrum_args import SpectrumProps
 from helper_scripts.spectrum_helpers import SpectrumHelpers
 from src.snr_measurements import SnrMeasurements
@@ -234,7 +235,7 @@ class SpectrumAssignment:
             continue
 
 
-    def get_spectrum_dynamic_slicing(self, mod_format_list: list, slice_bandwidth: str = None, path_index: int = None):
+    def get_spectrum_dynamic_slicing(self, mod_format_dict: dict, slice_bandwidth: str = None, path_index: int = None):
         """
         Controls the class, attempts to find an available spectrum.
 
@@ -257,7 +258,23 @@ class SpectrumAssignment:
             else:
                 return 0, 0
         else:
-            # TODO: develop it for flexigrid and considering remaining bw
-            return 0,0
+            mod_format = sort_nested_dict_vals(original_dict=mod_format_dict,
+                                                        nested_key='max_length')
+            mod_format_list = list(mod_format.keys())[::-1]
+            for mod in mod_format_list:
+                self.spectrum_props.slots_needed = mod_format_dict[mod]['slots_needed']
+                self.spectrum_props.modulation = mod
+                self.spectrum_props.slicing_flag = True
+                self._get_spectrum()
+                if self.spectrum_props.is_free:
+                    resp, bw, snr_val = self.snr_obj.handle_snr_dynamic_slicing(path_index)
+                    if not resp:
+                        continue
+                    self.spectrum_props.xt_cost = snr_val
+                    self.spectrum_props.is_free = True
+                    self.sdn_props.block_reason = None
+                    return mod_format, bw
+            self.spectrum_props.is_free = False
+            return False, 0
 
 
