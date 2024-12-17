@@ -517,7 +517,10 @@ class SnrMeasurements:
                     bw_resp = BW_mapping[self.spectrum_props.modulation]
                     
             else:
-                bw_resp = int(self.sdn_props.bandwidth)
+                if self.spectrum_props.slicing_flag:
+                    bw_resp = None
+                else:
+                    bw_resp = int(self.sdn_props.bandwidth)
 
         if self.spectrum_props.slicing_flag and self.engine_props['fixed_grid'] and self.engine_props['dynamic_lps']:
             mod_formats_dict = sort_nested_dict_vals(original_dict=self.sdn_props.mod_formats_dict,
