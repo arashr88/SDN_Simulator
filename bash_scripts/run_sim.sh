@@ -32,4 +32,4 @@ pip install -r requirements.txt
 x="BSC"
 
 # Run the non-artificial intelligence simulation with the specified parameters
-python run_sim.py --spectrum_allocation_priority "$x"
+python run_sim.py --spectrum_priority "$x"
