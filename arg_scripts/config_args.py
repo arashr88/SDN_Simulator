@@ -232,7 +232,7 @@ COMMAND_LINE_PARAMS = [
     ['pre_calc_mod_selection', bool, ''],
     ['is_only_core_node', bool, ''],
     ['multi_fiber',  bool, ''],
-    ['spectrum_allocation_priority', str, ''],
+    ['spectrum_priority', str, ''],
     ['save_step', int, ''],
     ['save_start_end_slots', bool, ''],    
 
