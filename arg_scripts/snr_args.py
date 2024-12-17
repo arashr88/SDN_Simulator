@@ -23,7 +23,7 @@ class SNRProps:
 
         self.link_dict = None  # Dictionary of links for calculating various metrics
         self.mod_format_mapping_dict = None # Dictionary of Modulation formats for precalculated SNR
-        self.bw_mapping_dict = None # Dictionary of Modulation formats to calculate the supported bit ratre for fixed grid
+        self.bw_mapping_dict = None # Dictionary of Modulation formats to calculate the supported bit rate for fixed grid
 
     def __repr__(self):
         return f"SNRProps({self.__dict__})"
