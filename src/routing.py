@@ -210,7 +210,6 @@ class Routing:
 
                     
                     temp_path = list(map(str, temp_path))
-                    path_len1 = find_path_len(path_list=temp_path, topology=self.engine_props['topology'])
                     path_len = item[3][0][cnt]
                     mod_formats_dict = sort_nested_dict_vals(original_dict=self.sdn_props.mod_formats_dict,
                                                     nested_key='max_length')
