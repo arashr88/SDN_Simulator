@@ -373,8 +373,8 @@ class SnrMeasurements:
                           self.spectrum_props.start_slot)
         else:
             NotImplementedError(f"Unexpected band: {self.spectrum_props.curr_band}")
-        mod_format = loaded_data[self.route_props.connection_index[0]][slot_index][path_index]
-        SNR_val = loaded_data_gsnr[self.route_props.connection_index[0]][slot_index][path_index]
+        mod_format = loaded_data[self.route_props.connection_index][slot_index][path_index]
+        SNR_val = loaded_data_gsnr[self.route_props.connection_index][slot_index][path_index]
         if mod_format == 0:
             resp = False
         elif mod_format_mapping[mod_format] == self.spectrum_props.modulation and BW_mapping[self.spectrum_props.modulation] >= int(self.sdn_props.bandwidth):
@@ -450,13 +450,13 @@ class SnrMeasurements:
                           self.spectrum_props.start_slot)
         else:
             NotImplementedError(f"Unexpected band: {self.spectrum_props.curr_band}")
-        if loaded_data[self.route_props.connection_index[0]][slot_index][path_index] == 0:
+        if loaded_data[self.route_props.connection_index][slot_index][path_index] == 0:
             supported_bw = 0
             mod_format = None
         else:
-            mod_format = mod_format_mapping[loaded_data[self.route_props.connection_index[0]][slot_index][path_index]]
+            mod_format = mod_format_mapping[loaded_data[self.route_props.connection_index][slot_index][path_index]]
             supported_bw = BW_mapping[mod_format]
-        SNR_val = loaded_data_gsnr[self.route_props.connection_index[0]][slot_index][path_index]
+        SNR_val = loaded_data_gsnr[self.route_props.connection_index][slot_index][path_index]
         return mod_format, supported_bw, SNR_val
 
 

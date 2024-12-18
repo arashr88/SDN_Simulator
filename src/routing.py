@@ -183,8 +183,8 @@ class Routing:
         self.route_props.paths_matrix = list()
         self.route_props.mod_formats_matrix = list()
         self.route_props.weights_list = list()
-        self.route_props.connection_index = list()
         self.route_props.path_index = list()
+        self.route_props.connection_index = None
 
     def load_k_shortest(self):
         """
@@ -199,7 +199,7 @@ class Routing:
             first_node = item[5][0][0][0][0]
             last_node = item[5][0][0][0][-1]
             if first_node in src_des_list and last_node in src_des_list:
-                self.route_props.connection_index.append(path_cnt)
+                self.route_props.connection_index = path_cnt
                 for path in item[5][0]:
                     if cnt == self.engine_props['k_paths']:
                         break
