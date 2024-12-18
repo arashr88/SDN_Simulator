@@ -102,6 +102,7 @@ class TestEngine(unittest.TestCase):
         iteration = 0
         self.engine.engine_props['print_step'] = 1  # Ensure print_step triggers the print
         self.engine.engine_props['is_training'] = False  # Ensure it's not training to allow printing
+        self.engine.engine_props['save_step'] = 1  # Ensure save_step triggers the saving data
 
         with patch.object(self.engine.stats_obj, 'get_conf_inter', return_value=True), \
                 patch.object(self.engine.stats_obj, 'print_iter_stats') as _:
@@ -138,6 +139,7 @@ class TestEngine(unittest.TestCase):
         self.engine.engine_props['num_requests'] = 5000
         self.engine.engine_props['seeds'] = [42]
         self.engine.engine_props['topology_info']['nodes'] = {'A': {}, 'B': {}}  # Ensure nodes are a dictionary
+        self.engine.engine_props['is_only_core_node'] = True   # Define nodes permitted to send requests
 
         with patch('src.engine.load_model', autospec=True) as mock_load_model:
             self.engine.init_iter(iteration=iteration)
