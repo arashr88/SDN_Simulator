@@ -19,7 +19,8 @@ class TestSetupHelpers(unittest.TestCase):
             'date': '2024-08-19',
             'sim_start': '00:00',
             'const_link_weight': 10,
-            'cores_per_link': 7
+            'cores_per_link': 7,
+            'is_only_core_node': True
         }
         self.bw_info_dict = {'bandwidth': 100}
         self.network_dict = {'nodes': [], 'links': []}
