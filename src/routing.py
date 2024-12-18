@@ -201,7 +201,7 @@ class Routing:
             if first_element in src_des_list and last_element in src_des_list:
                 self.route_props.connection_index.append(path_cnt)
                 for path in item[5][0]:
-                    if cnt == 3:
+                    if cnt == self.engine_props['k_paths']:
                         break
                     if first_element == int(self.sdn_props.source):
                         temp_path = list(path[0])
