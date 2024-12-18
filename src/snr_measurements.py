@@ -489,8 +489,8 @@ class SnrMeasurements:
         """
         self.num_slots = self.spectrum_props.end_slot - self.spectrum_props.start_slot + 1
         if self.engine_props['snr_type'] == "snr_e2e_external_resources":
-            mod_format, bw, SNR_val = self.check_snr_ext_slicing(path_index)
+            mod_format, bw, snr_val = self.check_snr_ext_slicing(path_index)
         else:
             raise NotImplementedError(f"Unexpected snr_type flag got: {self.engine_props['snr_type']}")
 
-        return mod_format, bw, SNR_val
+        return mod_format, bw, snr_val
