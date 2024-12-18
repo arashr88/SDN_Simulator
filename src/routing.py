@@ -196,14 +196,14 @@ class Routing:
         path_cnt = 0
         for item in loaded_data_dict:
             cnt = 0
-            first_element = item[5][0][0][0][0]
-            last_element = item[5][0][0][0][-1]
-            if first_element in src_des_list and last_element in src_des_list:
+            first_node = item[5][0][0][0][0]
+            last_node = item[5][0][0][0][-1]
+            if first_node in src_des_list and last_node in src_des_list:
                 self.route_props.connection_index.append(path_cnt)
                 for path in item[5][0]:
                     if cnt == self.engine_props['k_paths']:
                         break
-                    if first_element == int(self.sdn_props.source):
+                    if first_node == int(self.sdn_props.source):
                         temp_path = list(path[0])
                     else:
                         temp_path = list(path[0][::-1])
