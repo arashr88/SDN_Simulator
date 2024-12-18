@@ -8,6 +8,9 @@
 #SBATCH -o slurm-%A_%a.out  # Output file for each task
 #SBATCH --array=0-3  # Define array size based on total combinations
 
+
+# This script is designed to run a non-artificial intelligence simulation on the Unity cluster at UMass Amherst.
+
 set -e  # Stop the script if any command fails
 
 echo "Starting job with SLURM_ARRAY_TASK_ID: $SLURM_ARRAY_TASK_ID"
