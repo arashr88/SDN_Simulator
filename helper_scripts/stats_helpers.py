@@ -218,8 +218,6 @@ class SimStats:
                     self.stats_props.mods_used_dict[data][band] += 1
                     self.stats_props.mods_used_dict[data]['length'][band].append(sdn_data.path_weight)
                     self.stats_props.mods_used_dict[data]['length']['overall'].append(sdn_data.path_weight)
-                # elif stat_key == 'xt_list':
-                #     self.stats_props.xt_list.append(data) # TODO: double-check
                 elif stat_key == 'start_slot_list':
                     self.stats_props.start_slot_list.append(int(data))
                 elif stat_key == 'end_slot_list':
