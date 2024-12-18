@@ -308,7 +308,7 @@ class SnrMeasurements:
         return resp, cross_talk
     
     # TODO: update the method based on external resources
-    def check_snr_ext(self, path_index):
+    def check_snr_ext(self, path_index: int):
         """
         Checks the SNR on a single request using the external resources.
 
