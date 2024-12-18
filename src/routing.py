@@ -213,9 +213,9 @@ class Routing:
                     path_len = item[3][0][cnt]
                     mod_formats_dict = sort_nested_dict_vals(original_dict=self.sdn_props.mod_formats_dict,
                                                     nested_key='max_length')
-                    mod_formats = list(mod_formats_dict.keys())
+                    mod_formats_list = list(mod_formats_dict.keys())
                     self.route_props.paths_matrix.append(temp_path)
-                    self.route_props.mod_formats_matrix.append(mod_formats[::-1])
+                    self.route_props.mod_formats_matrix.append(mod_formats_list[::-1])
                     self.route_props.weights_list.append(path_len)
                     self.route_props.path_index.append(cnt)
 
