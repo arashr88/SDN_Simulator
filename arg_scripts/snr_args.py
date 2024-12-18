@@ -22,8 +22,8 @@ class SNRProps:
         self.num_span = None  # Number of span
 
         self.link_dict = None  # Dictionary of links for calculating various metrics
-        self.mod_format_mapping_dict = None # Dictionary of Modulation formats for precalculated SNR
-        self.bw_mapping_dict = None # Dictionary of Modulation formats to calculate the supported bit rate for fixed grid
+        self.mod_format_mapping_dict = {6: "64-QAM", 5: "32-QAM", 4: "16-QAM", 3: "8-QAM", 2: "QPSK", 1: "BPSK"} # Dictionary of Modulation formats for precalculated SNR
+        self.bw_mapping_dict = {"64-QAM": 600, "32-QAM": 500, "16-QAM": 400, "8-QAM": 300, "QPSK": 200, "BPSK": 100} # Dictionary of Modulation formats to calculate the supported bit rate for fixed grid
 
     def __repr__(self):
         return f"SNRProps({self.__dict__})"

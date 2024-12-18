@@ -315,22 +315,7 @@ class SnrMeasurements:
         :return: Whether the SNR threshold can be met and SNR value.
         :rtype: tuple
         """
-        mod_format_mapping = {
-        6: "64-QAM",
-        5: "32-QAM",
-        4: "16-QAM",
-        3: "8-QAM",
-        2: "QPSK",
-        1: "BPSK"
-        }
-        BW_mapping = {
-        "64-QAM": 600,
-        "32-QAM": 500,
-        "16-QAM": 400,
-        "8-QAM": 300,
-        "QPSK": 200,
-        "BPSK": 100
-        }
+
         if self.engine_props['multi_fiber']:
             loaded_data = np.load('MF-USB6014-MF.npy', allow_pickle=True)
             loaded_data_gsnr = np.load('GSNR-USB6014-MF.npy', allow_pickle=True)
@@ -377,7 +362,7 @@ class SnrMeasurements:
         snr_val = loaded_data_gsnr[self.route_props.connection_index][slot_index][path_index]
         if mod_format == 0:
             resp = False
-        elif mod_format_mapping[mod_format] == self.spectrum_props.modulation and BW_mapping[self.spectrum_props.modulation] >= int(self.sdn_props.bandwidth):
+        elif self.snr_props.mod_format_mapping_dict[mod_format] == self.spectrum_props.modulation and self.snr_props.bw_mapping_dict[self.spectrum_props.modulation] >= int(self.sdn_props.bandwidth):
             resp = True
         else:
             resp = False
@@ -391,22 +376,7 @@ class SnrMeasurements:
         :return: Whether the SNR threshold can be met and SNR value.
         :rtype: tuple
         """
-        mod_format_mapping = {
-        6: "64-QAM",
-        5: "32-QAM",
-        4: "16-QAM",
-        3: "8-QAM",
-        2: "QPSK",
-        1: "BPSK"
-        }
-        BW_mapping = {
-        "64-QAM": 600,
-        "32-QAM": 500,
-        "16-QAM": 400,
-        "8-QAM": 300,
-        "QPSK": 200,
-        "BPSK": 100
-        }
+
         if self.engine_props['multi_fiber']:
             loaded_data = np.load('MF-USB6014-MF.npy', allow_pickle=True)
             loaded_data_gsnr = np.load('GSNR-USB6014-MF.npy', allow_pickle=True)
@@ -454,8 +424,8 @@ class SnrMeasurements:
             supported_bw = 0
             mod_format = None
         else:
-            mod_format = mod_format_mapping[loaded_data[self.route_props.connection_index][slot_index][path_index]]
-            supported_bw = BW_mapping[mod_format]
+            mod_format = self.snr_props.mod_format_mapping_dict[loaded_data[self.route_props.connection_index][slot_index][path_index]]
+            supported_bw = self.snr_props.bw_mapping_dict[mod_format]
         snr_val = loaded_data_gsnr[self.route_props.connection_index][slot_index][path_index]
         return mod_format, supported_bw, snr_val
 
