@@ -177,10 +177,8 @@ class SDNController:
                     self.sdn_props.is_sliced = False
                     break
             else:
-                # mod_format = get_path_mod(mods_dict=mods_dict, path_len=path_len)
                 # TODO: develop dynamic slicing to flexigrid 
                 raise NotImplementedError("TO BE DEVELOPED")
-                bw_mod_dict = sort_dict_keys(dictionary=self.engine_props['mod_per_bw'])
                 
 
     def _init_req_stats(self):
