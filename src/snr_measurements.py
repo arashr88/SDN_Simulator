@@ -382,8 +382,7 @@ class SnrMeasurements:
         else:
             resp = False
         return resp, SNR_val
-        raise NotImplementedError(f"Unexpected snr_type flag got: {self.engine_props['snr_type']}")
-
+    
 
     def check_snr_ext_slicing(self, path_index):
         """
