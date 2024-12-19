@@ -198,10 +198,14 @@ class TestSimStats(unittest.TestCase):
         Test get blocking.
         """
         self.sim_stats.blocked_reqs = 20
+        self.sim_stats.bit_rate_blocked = 100
+        self.sim_stats.bit_rate_request = 500
 
         self.sim_stats.get_blocking()
         expected_blocking_prob = 20 / 100
+        expected_bit_rate_blocking_prob = 100 / 500
         self.assertIn(expected_blocking_prob, self.sim_stats.stats_props.sim_block_list)
+        self.assertIn(expected_bit_rate_blocking_prob, self.sim_stats.stats_props.sim_br_block_list)
 
     def test_handle_iter_lists(self):
         """
