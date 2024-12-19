@@ -30,6 +30,7 @@ class TestSpectrumAssignment(unittest.TestCase):
             'band_list': ['c'],
             'allocation_method': 'first_fit',
             'fixed_grid': False,
+            'spectrum_priority': 'BSC'
         }
         sdn_props = MagicMock()
         sdn_props.net_spec_dict = {
