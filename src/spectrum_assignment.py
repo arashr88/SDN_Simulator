@@ -100,100 +100,107 @@ class SpectrumAssignment:
 
         return core_matrix, core_list, self.engine_props['band_list']
 
+    def _get_open_slots_matrix(self, open_slots_arr, flag):
+        """
+        Converts an array of open slots into a matrix of contiguous blocks based on the flag.
+
+        :param open_slots_arr: Array of open slot indices.
+        :param flag: Allocation flag (e.g., 'first_fit', 'last_fit').
+        :return: A matrix of contiguous open slot blocks.
+        :rtype: list
+        """
+        if flag in ('last_fit', 'priority_last'):
+            return [list(map(itemgetter(1), g))[::-1] for k, g in
+                    itertools.groupby(enumerate(open_slots_arr), lambda i_x: i_x[0] - i_x[1])]
+        elif flag in ('first_fit', 'priority_first', 'forced_index'):
+            return [list(map(itemgetter(1), g)) for k, g in
+                    itertools.groupby(enumerate(open_slots_arr), lambda i_x: i_x[0] - i_x[1])]
+        else:
+            raise NotImplementedError(f"Invalid flag, got: {flag} and expected 'last_fit' or 'first_fit'.")
+
     def handle_first_last(self, flag: str):
         """
-        Handles either first-fit or last-fit spectrum allocation.
+        Handles either first-fit or last-fit spectrum allocation without any priority or SNR considerations.
 
         :param flag: A flag to determine which allocation method to be used.
         """
-        # TODO: Cores matrix is now a dictionary, change name
         core_matrix, core_list, band_list = self._setup_first_last()
 
-        if self.engine_props['spectrum_priority'] == 'BSC':
-            
-            for band_index in range(len(band_list)):  # pylint: disable=consider-using-enumerate
-                for core_arr, core_num in zip(core_matrix, core_list):
-                    open_slots_arr = np.where(core_arr[band_index] == 0)[0]
+        for core_arr, core_num in zip(core_matrix, core_list):
+            for band_index, band in enumerate(band_list):
+                open_slots_arr = np.where(core_arr[band_index] == 0)[0]
+                open_slots_matrix = self._get_open_slots_matrix(open_slots_arr, flag)
 
-                    # Source: https://stackoverflow.com/questions/3149440/splitting-list-based-on-missing-numbers-in-a-sequence
-                    if flag in ('last_fit', 'priority_last'):
-                        open_slots_matrix = [list(map(itemgetter(1), g))[::-1] for k, g in
-                                            itertools.groupby(enumerate(open_slots_arr), lambda i_x: i_x[0] - i_x[1])]
-                    elif flag in ('first_fit', 'priority_first', 'forced_index'):
-                        open_slots_matrix = [list(map(itemgetter(1), g)) for k, g in
-                                            itertools.groupby(enumerate(open_slots_arr), lambda i_x: i_x[0] - i_x[1])]
-                    else:
-                        raise NotImplementedError(f'Invalid flag, got: {flag} and expected last_fit or first_fit.')
+                self.spec_help_obj.core_num = core_num
+                self.spec_help_obj.curr_band = band
+                was_allocated = self.spec_help_obj.check_super_channels(open_slots_matrix=open_slots_matrix, flag=flag)
+                if was_allocated:
+                    return
 
-                    self.spec_help_obj.core_num = core_num
-                    self.spec_help_obj.curr_band = band_list[band_index]
-                    was_allocated = self.spec_help_obj.check_super_channels(open_slots_matrix=open_slots_matrix, flag=flag)
-                    # support FF for the spectrum meet the minimum gsnr requirments
-                    if self.engine_props['cores_per_link'] in [13, 19] and self.engine_props['snr_type'] == 'snr_e2e_external_resources':
-                        snr_result = self.snr_obj.handle_snr_dynamic_slicing(self.sdn_props.path_index)[0]
-                        break_outer_loop = False 
+    def handle_first_last_priority_bsc(self, flag: str):
+        """
+        Handles first-fit or last-fit spectrum allocation with multi-band priority (BSC).
 
-                        if snr_result is None:
-                            for cnt_tmp, row in enumerate(open_slots_matrix):
-                                for cnt_tmp2, slot in enumerate(list(row)):
-                                    was_allocated = self.spec_help_obj.check_super_channels(open_slots_matrix=open_slots_matrix, flag=flag)
-                                    snr_result = self.snr_obj.handle_snr_dynamic_slicing(self.sdn_props.path_index)[0]
-                                    if snr_result is None:
-                                        if row:
-                                            open_slots_matrix[cnt_tmp].pop(0)                                        
-                                        if all(len(row1) == 0 for row1 in open_slots_matrix):
-                                            was_allocated = False
-                                            break
-                                    else:
-                                        was_allocated = True
-                                        break_outer_loop = True
-                                        break
-                                if break_outer_loop: 
-                                    break
-                    if was_allocated:
-                        return
-        else:
+        :param flag: A flag to determine which allocation method to be used.
+        """
+        core_matrix, core_list, band_list = self._setup_first_last()
+
+        for band_index, band in enumerate(band_list):
             for core_arr, core_num in zip(core_matrix, core_list):
-                for band_index in range(len(band_list)):  # pylint: disable=consider-using-enumerate
-                    open_slots_arr = np.where(core_arr[band_index] == 0)[0]
+                open_slots_arr = np.where(core_arr[band_index] == 0)[0]
+                open_slots_matrix = self._get_open_slots_matrix(open_slots_arr, flag)
 
-                    # Source: https://stackoverflow.com/questions/3149440/splitting-list-based-on-missing-numbers-in-a-sequence
-                    if flag in ('last_fit', 'priority_last'):
-                        open_slots_matrix = [list(map(itemgetter(1), g))[::-1] for k, g in
-                                            itertools.groupby(enumerate(open_slots_arr), lambda i_x: i_x[0] - i_x[1])]
-                    elif flag in ('first_fit', 'priority_first', 'forced_index'):
-                        open_slots_matrix = [list(map(itemgetter(1), g)) for k, g in
-                                            itertools.groupby(enumerate(open_slots_arr), lambda i_x: i_x[0] - i_x[1])]
-                    else:
-                        raise NotImplementedError(f'Invalid flag, got: {flag} and expected last_fit or first_fit.')
+                self.spec_help_obj.core_num = core_num
+                self.spec_help_obj.curr_band = band
+                was_allocated = self.spec_help_obj.check_super_channels(open_slots_matrix=open_slots_matrix, flag=flag)
+                if self._handle_snr_external(flag, open_slots_matrix) or was_allocated:
+                    return
 
-                    self.spec_help_obj.core_num = core_num
-                    self.spec_help_obj.curr_band = band_list[band_index]
-                    was_allocated = self.spec_help_obj.check_super_channels(open_slots_matrix=open_slots_matrix, flag=flag)
-                    # support FF for the spectrum meet the minimum gsnr requirments
-                    if self.engine_props['cores_per_link'] in [13, 19] and self.engine_props['snr_type'] == 'snr_e2e_external_resources':
-                        snr_result = self.snr_obj.handle_snr_dynamic_slicing(self.sdn_props.path_index)[0]
-                        break_outer_loop = False 
+    def handle_first_last_priority_band(self, flag: str):
+        """
+        Handles first-fit or last-fit spectrum allocation with band priority (non-BSC).
 
-                        if snr_result is None:
-                            for cnt_tmp, row in enumerate(open_slots_matrix):
-                                for cnt_tmp2, slot in enumerate(list(row)):
-                                    was_allocated = self.spec_help_obj.check_super_channels(open_slots_matrix=open_slots_matrix, flag=flag)
-                                    snr_result = self.snr_obj.handle_snr_dynamic_slicing(self.sdn_props.path_index)[0]
-                                    if snr_result is None:
-                                        if row:
-                                            open_slots_matrix[cnt_tmp].pop(0)                                        
-                                        if all(len(row1) == 0 for row1 in open_slots_matrix):
-                                            was_allocated = False
-                                            break
-                                    else:
-                                        was_allocated = True
-                                        break_outer_loop = True
-                                        break
-                                if break_outer_loop: 
-                                    break
-                    if was_allocated:
-                        return
+        :param flag: A flag to determine which allocation method to be used.
+        """
+        core_matrix, core_list, band_list = self._setup_first_last()
+
+        for core_arr, core_num in zip(core_matrix, core_list):
+            for band_index, band in enumerate(band_list):
+                open_slots_arr = np.where(core_arr[band_index] == 0)[0]
+                open_slots_matrix = self._get_open_slots_matrix(open_slots_arr, flag)
+
+                self.spec_help_obj.core_num = core_num
+                self.spec_help_obj.curr_band = band
+                was_allocated = self.spec_help_obj.check_super_channels(open_slots_matrix=open_slots_matrix, flag=flag)
+                if self._handle_snr_external(flag, open_slots_matrix) or was_allocated:
+                    return
+
+    def _handle_snr_external(self, flag, open_slots_matrix):
+        """
+        Handles SNR external resource checks during allocation.
+
+        :param flag: Allocation flag (e.g., 'first_fit', 'last_fit').
+        :param open_slots_matrix: Matrix of open slot blocks.
+        :return: Whether the allocation was successful.
+        :rtype: bool
+        """
+        if not (self.engine_props['cores_per_link'] in [13, 19] and
+                self.engine_props['snr_type'] == 'snr_e2e_external_resources'):
+            return False
+
+        for row in open_slots_matrix:
+            while row:
+                was_allocated = self.spec_help_obj.check_super_channels(open_slots_matrix=open_slots_matrix, flag=flag)
+                snr_result = self.snr_obj.handle_snr_dynamic_slicing(self.sdn_props.path_index)[0]
+                if snr_result is not None:
+                    return True
+
+                row.pop(0)  # Remove the first slot in the row if no valid SNR result
+
+                if all(len(row) == 0 for row in open_slots_matrix):
+                    return False
+
+        return False
 
     # fixme: Only works for 7 cores
     def xt_aware(self):
@@ -211,12 +218,18 @@ class SpectrumAssignment:
         return self.handle_first_last(flag='last_fit')
 
     def _get_spectrum(self):
+        """
+        Determines the spectrum allocation method based on engine properties and spectrum requirements.
+        """
         if self.spectrum_props.forced_index is not None:
             self.handle_first_last(flag='forced_index')
         elif self.engine_props['allocation_method'] == 'best_fit':
             self.find_best_fit()
         elif self.engine_props['allocation_method'] in ('first_fit', 'last_fit', 'priority_first', 'priority_last'):
-            self.handle_first_last(flag=self.engine_props['allocation_method'])
+            if self.engine_props['spectrum_priority'] == 'BSC':
+                self.handle_first_last_priority_bsc(flag=self.engine_props['allocation_method'])
+            else:
+                self.handle_first_last_priority_band(flag=self.engine_props['allocation_method'])
         elif self.engine_props['allocation_method'] == 'xt_aware':
             self.xt_aware()
         else:
@@ -274,7 +287,6 @@ class SpectrumAssignment:
             self.spectrum_props.block_reason = 'congestion'
             continue
 
-
     def get_spectrum_dynamic_slicing(self, mod_format_list: list, slice_bandwidth: str = None, path_index: int = None):
         """
         Controls the class, attempts to find an available spectrum.
@@ -303,6 +315,4 @@ class SpectrumAssignment:
                 return 0, 0
         else:
             # TODO: develop it for flexigrid
-            return 0,0
-
-
+            return 0, 0
