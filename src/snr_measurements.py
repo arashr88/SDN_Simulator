@@ -4,6 +4,7 @@ import numpy as np
 import networkx as nx
 
 from arg_scripts.snr_args import SNRProps
+from helper_scripts.snr_helpers import get_slot_index, get_loaded_files, compute_response
 
 
 # fixme: Only works for seven cores
@@ -306,8 +307,7 @@ class SnrMeasurements:
             resp = cross_talk < self.engine_props['requested_xt'][self.spectrum_props.modulation]
 
         return resp, cross_talk
-    
-    # TODO: update the method based on external resources
+
     def check_snr_ext(self, path_index: int):
         """
         Checks the SNR on a single request using the external resources.
@@ -315,121 +315,55 @@ class SnrMeasurements:
         :return: Whether the SNR threshold can be met and SNR value.
         :rtype: tuple
         """
+        # Fetch loaded files
+        loaded_data, loaded_data_gsnr = get_loaded_files(
+            self.spectrum_props.core_num, self.engine_props['cores_per_link'], self.snr_props.file_mapping_dict
+        )
 
-        if self.engine_props['multi_fiber']:
-            loaded_data = np.load('MF-USB6014-MF.npy', allow_pickle=True)
-            loaded_data_gsnr = np.load('GSNR-USB6014-MF.npy', allow_pickle=True)
-        else:
-            if self.engine_props['cores_per_link'] == 4:
-                loaded_data = np.load('MF-USB6014-MCF4-C2.npy', allow_pickle=True)
-                loaded_data_gsnr = np.load('GSNR-USB6014-MCF4-C2.npy', allow_pickle=True)
-            elif self.spectrum_props.core_num == 6 and self.engine_props['cores_per_link'] == 7:
-                loaded_data = np.load('MF-USB6014-MCF7-C6.npy', allow_pickle=True)
-                loaded_data_gsnr = np.load('GSNR-USB6014-MCF7-C6.npy', allow_pickle=True)
-            elif self.spectrum_props.core_num < 6 and self.engine_props['cores_per_link'] == 7:
-                loaded_data = np.load('MF-USB6014-MCF7-C3.npy', allow_pickle=True)
-                loaded_data_gsnr = np.load('GSNR-USB6014-MCF7-C3.npy', allow_pickle=True)
-            elif self.spectrum_props.core_num  < 6 and self.engine_props['cores_per_link'] == 13:
-                loaded_data = np.load('MF-USB6014-MCF13-C2.npy', allow_pickle=True)
-                loaded_data_gsnr = np.load('GSNR-USB6014-MCF13-C2.npy', allow_pickle=True)
-            elif 5 < self.spectrum_props.core_num  < 12 and self.engine_props['cores_per_link'] == 13:
-                loaded_data = np.load('MF-USB6014-MCF13-C5.npy', allow_pickle=True)
-                loaded_data_gsnr = np.load('GSNR-USB6014-MCF13-C5.npy', allow_pickle=True)
-            elif self.spectrum_props.core_num  == 12 and self.engine_props['cores_per_link'] == 13:
-                loaded_data = np.load('MF-USB6014-MCF13-C6.npy', allow_pickle=True)
-                loaded_data_gsnr = np.load('GSNR-USB6014-MCF13-C6.npy', allow_pickle=True)
-            elif self.spectrum_props.core_num >= 12 and self.engine_props['cores_per_link'] == 19:
-                loaded_data = np.load('MF-USB6014-MCF19-C6.npy', allow_pickle=True)
-                loaded_data_gsnr = np.load('GSNR-USB6014-MCF19-C6.npy', allow_pickle=True)
-            elif self.spectrum_props.core_num  in [0,2,4,6,8,10] and self.engine_props['cores_per_link'] == 19:
-                loaded_data = np.load('MF-USB6014-MCF19-C3.npy', allow_pickle=True)
-                loaded_data_gsnr = np.load('GSNR-USB6014-MCF19-C3.npy', allow_pickle=True)
-            elif self.spectrum_props.core_num  in [1,3,5,7,9,11] and self.engine_props['cores_per_link'] == 19:
-                loaded_data = np.load('MF-USB6014-MCF19-C4.npy', allow_pickle=True)
-                loaded_data_gsnr = np.load('GSNR-USB6014-MCF19-C4.npy', allow_pickle=True)
-        slot_index = 0
-        if self.spectrum_props.curr_band == 'l':
-            slot_index = self.spectrum_props.start_slot
-        elif self.spectrum_props.curr_band == 'c':
-            slot_index = self.engine_props['l_band'] + self.spectrum_props.start_slot
-        elif self.spectrum_props.curr_band == 's':
-            slot_index = (self.engine_props['l_band'] + 
-                          self.engine_props['c_band'] + 
-                          self.spectrum_props.start_slot)
-        else:
-            NotImplementedError(f"Unexpected band: {self.spectrum_props.curr_band}")
+        # Compute slot index
+        slot_index = get_slot_index(
+            self.spectrum_props.curr_band, self.spectrum_props.start_slot, self.engine_props
+        )
+
+        # Fetch modulation format and SNR value
         mod_format = loaded_data[self.route_props.connection_index][slot_index][path_index]
         snr_val = loaded_data_gsnr[self.route_props.connection_index][slot_index][path_index]
-        if mod_format == 0:
-            resp = False
-        elif self.snr_props.mod_format_mapping_dict[mod_format] == self.spectrum_props.modulation and self.snr_props.bw_mapping_dict[self.spectrum_props.modulation] >= int(self.sdn_props.bandwidth):
-            resp = True
-        else:
-            resp = False
+
+        # Determine response
+        resp = compute_response(mod_format, self.snr_props, self.spectrum_props, self.sdn_props)
+
         return resp, snr_val
-    
 
     def check_snr_ext_slicing(self, path_index):
         """
-        Checks the SNR on a single request using the external resources.
+        Checks the SNR on a single request using the external resources for slicing.
 
-        :return: Whether the SNR threshold can be met and SNR value.
+        :return: Modulation format, supported bandwidth, and SNR value.
         :rtype: tuple
         """
+        # Fetch loaded files
+        loaded_data, loaded_data_gsnr = get_loaded_files(
+            self.spectrum_props.core_num, self.engine_props['cores_per_link'], self.snr_props.file_mapping_dict
+        )
 
-        if self.engine_props['multi_fiber']:
-            loaded_data = np.load('MF-USB6014-MF.npy', allow_pickle=True)
-            loaded_data_gsnr = np.load('GSNR-USB6014-MF.npy', allow_pickle=True)
-        else:
-            if self.engine_props['cores_per_link'] == 4:
-                loaded_data = np.load('MF-USB6014-MCF4-C2.npy', allow_pickle=True)
-                loaded_data_gsnr = np.load('GSNR-USB6014-MCF4-C2.npy', allow_pickle=True)
-            elif self.spectrum_props.core_num == 6 and self.engine_props['cores_per_link'] == 7:
-                loaded_data = np.load('MF-USB6014-MCF7-C6.npy', allow_pickle=True)
-                loaded_data_gsnr = np.load('GSNR-USB6014-MCF7-C6.npy', allow_pickle=True)
-            elif self.spectrum_props.core_num < 6 and self.engine_props['cores_per_link'] == 7:
-                loaded_data = np.load('MF-USB6014-MCF7-C3.npy', allow_pickle=True)
-                loaded_data_gsnr = np.load('GSNR-USB6014-MCF7-C3.npy', allow_pickle=True)
-            elif self.spectrum_props.core_num  < 6 and self.engine_props['cores_per_link'] == 13:
-                loaded_data = np.load('MF-USB6014-MCF13-C2.npy', allow_pickle=True)
-                loaded_data_gsnr = np.load('GSNR-USB6014-MCF13-C2.npy', allow_pickle=True)
-            elif 5 < self.spectrum_props.core_num  < 12 and self.engine_props['cores_per_link'] == 13:
-                loaded_data = np.load('MF-USB6014-MCF13-C5.npy', allow_pickle=True)
-                loaded_data_gsnr = np.load('GSNR-USB6014-MCF13-C5.npy', allow_pickle=True)
-            elif self.spectrum_props.core_num  == 12 and self.engine_props['cores_per_link'] == 13:
-                loaded_data = np.load('MF-USB6014-MCF13-C6.npy', allow_pickle=True)
-                loaded_data_gsnr = np.load('GSNR-USB6014-MCF13-C6.npy', allow_pickle=True)
-            elif self.spectrum_props.core_num >= 12 and self.engine_props['cores_per_link'] == 19:
-                loaded_data = np.load('MF-USB6014-MCF19-C6.npy', allow_pickle=True)
-                loaded_data_gsnr = np.load('GSNR-USB6014-MCF19-C6.npy', allow_pickle=True)
-            elif self.spectrum_props.core_num  in [0,2,4,6,8,10] and self.engine_props['cores_per_link'] == 19:
-                loaded_data = np.load('MF-USB6014-MCF19-C3.npy', allow_pickle=True)
-                loaded_data_gsnr = np.load('GSNR-USB6014-MCF19-C3.npy', allow_pickle=True)
-            elif self.spectrum_props.core_num  in [1,3,5,7,9,11] and self.engine_props['cores_per_link'] == 19:
-                loaded_data = np.load('MF-USB6014-MCF19-C4.npy', allow_pickle=True)
-                loaded_data_gsnr = np.load('GSNR-USB6014-MCF19-C4.npy', allow_pickle=True)
-        snr_val = 0
-        slot_index = 0
-        if self.spectrum_props.curr_band == 'l':
-            slot_index = self.spectrum_props.start_slot
-        elif self.spectrum_props.curr_band == 'c':
-            slot_index = self.engine_props['l_band'] + self.spectrum_props.start_slot
-        elif self.spectrum_props.curr_band == 's':
-            slot_index = (self.engine_props['l_band'] + 
-                          self.engine_props['c_band'] + 
-                          self.spectrum_props.start_slot)
-        else:
-            NotImplementedError(f"Unexpected band: {self.spectrum_props.curr_band}")
-        if loaded_data[self.route_props.connection_index][slot_index][path_index] == 0:
-            supported_bw = 0
+        # Compute slot index
+        slot_index = get_slot_index(
+            self.spectrum_props.curr_band, self.spectrum_props.start_slot, self.engine_props
+        )
+
+        # Retrieve modulation format and supported bandwidth
+        mod_format_key = loaded_data[self.route_props.connection_index][slot_index][path_index]
+        if mod_format_key == 0:
             mod_format = None
+            supported_bw = 0
         else:
-            mod_format = self.snr_props.mod_format_mapping_dict[loaded_data[self.route_props.connection_index][slot_index][path_index]]
+            mod_format = self.snr_props.mod_format_mapping_dict[mod_format_key]
             supported_bw = self.snr_props.bw_mapping_dict[mod_format]
+
+        # Retrieve SNR value
         snr_val = loaded_data_gsnr[self.route_props.connection_index][slot_index][path_index]
+
         return mod_format, supported_bw, snr_val
-
-
 
     def handle_snr(self, path_index):
         """
