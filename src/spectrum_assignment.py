@@ -312,7 +312,9 @@ class SpectrumAssignment:
                     self.sdn_props.block_reason = None
                 return mod_format, bw
             else:
-                return 0, 0
+                mod_format, bw = False
+                return mod_format, bw
         else:
-            # TODO: develop it for flexigrid
-            return 0, 0
+            # TODO: Develop for flexigrid
+            mod_format, bw = False
+            return mod_format, bw
