@@ -55,7 +55,7 @@ class TestSDNController(unittest.TestCase):
         self.controller.spectrum_obj.spectrum_props.end_slot = 3
         self.controller.spectrum_obj.spectrum_props.core_num = 0
         self.controller.spectrum_obj.spectrum_props.curr_band = 'c'
-        self.controller.engine_props['guard_slots'] = True
+        self.controller.engine_props['guard_slots'] = 1
         self.controller.allocate()
 
         for link in zip(self.controller.sdn_props.path_list, self.controller.sdn_props.path_list[1:]):
@@ -109,7 +109,8 @@ class TestSDNController(unittest.TestCase):
     @patch('src.sdn_controller.SDNController._update_req_stats')
     @patch('src.routing.Routing.get_route')
     @patch('src.spectrum_assignment.SpectrumAssignment.get_spectrum')
-    def test_handle_event_arrival(self, mock_allocate, mock_stats, mock_route, mock_spectrum):  # pylint: disable=unused-argument
+    def test_handle_event_arrival(self, mock_allocate, mock_stats, mock_route,
+                                  mock_spectrum):  # pylint: disable=unused-argument
         """
         Tests the handle event with an arrival request.
         """
@@ -125,6 +126,30 @@ class TestSDNController(unittest.TestCase):
 
         mock_allocate.assert_called_once()
         self.assertTrue(self.controller.sdn_props.was_routed)
+
+    def test_allocate_without_guard_band(self):
+        """
+        Test the allocate method when no guard band is present.
+        """
+        self.controller.spectrum_obj.spectrum_props.start_slot = 0
+        self.controller.spectrum_obj.spectrum_props.end_slot = 2
+        self.controller.spectrum_obj.spectrum_props.core_num = 0
+        self.controller.spectrum_obj.spectrum_props.curr_band = 'c'
+        self.controller.engine_props['guard_slots'] = 0
+
+        # Perform allocation
+        self.controller.allocate()
+
+        for link in zip(self.controller.sdn_props.path_list, self.controller.sdn_props.path_list[1:]):
+            core_matrix = self.controller.sdn_props.net_spec_dict[link]['cores_matrix']['c'][0]
+
+            # Check allocation
+            self.assertTrue(np.all(core_matrix[:3] == self.controller.sdn_props.req_id),
+                            "Request not properly allocated")
+
+            # Ensure no guard band is allocated
+            self.assertNotIn(self.controller.sdn_props.req_id * -1, core_matrix,
+                             "Guard band should not be allocated.")
 
 
 if __name__ == '__main__':
