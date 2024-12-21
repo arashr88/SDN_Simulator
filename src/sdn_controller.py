@@ -227,7 +227,7 @@ class SDNController:
             for path_index, path_list in enumerate(route_matrix):
                 if path_list is not False:
                     self.sdn_props.path_list = path_list
-                    self.sdn_props.path_index = path_index
+                    self.sdn_props.path_index_list = path_index
                     mod_format_list = self.route_obj.route_props.mod_formats_matrix[path_index]
 
                     if ml_model is not None:
