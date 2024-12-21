@@ -33,6 +33,7 @@ class TestEngine(unittest.TestCase):
             'l_band': 320,
             'max_iters': 10,
             'print_step': 1,
+            'save_step': 1,
             'is_training': False,
             'deploy_model': False,
             'seeds': [42],
@@ -139,7 +140,7 @@ class TestEngine(unittest.TestCase):
         self.engine.engine_props['num_requests'] = 5000
         self.engine.engine_props['seeds'] = [42]
         self.engine.engine_props['topology_info']['nodes'] = {'A': {}, 'B': {}}  # Ensure nodes are a dictionary
-        self.engine.engine_props['is_only_core_node'] = True   # Define nodes permitted to send requests
+        self.engine.engine_props['is_only_core_node'] = True  # Define nodes permitted to send requests
 
         with patch('src.engine.load_model', autospec=True) as mock_load_model:
             self.engine.init_iter(iteration=iteration)
@@ -150,6 +151,54 @@ class TestEngine(unittest.TestCase):
                 mock_load_model.assert_called_once_with(engine_props=self.engine.engine_props)
             else:
                 mock_load_model.assert_not_called()
+
+    def test_end_iter_non_training_conf_inter(self):
+        """
+        Test end_iter during non-training with confidence interval check.
+        """
+        iteration = 0
+        self.engine.engine_props['is_training'] = False  # Non-training scenario
+
+        with patch.object(self.engine.stats_obj, 'get_conf_inter', return_value=True) as mock_get_conf_inter:
+            resp = self.engine.end_iter(iteration=iteration, print_flag=True)
+            mock_get_conf_inter.assert_called_once()
+            self.assertTrue(resp)
+
+    def test_end_iter_training_conf_inter(self):
+        """
+        Test end_iter during training (ignores confidence interval).
+        """
+        iteration = 0
+        self.engine.engine_props['is_training'] = True  # Training scenario
+
+        with patch.object(self.engine.stats_obj, 'get_conf_inter') as mock_get_conf_inter:
+            resp = self.engine.end_iter(iteration=iteration, print_flag=True)
+            mock_get_conf_inter.assert_not_called()  # Should not check confidence intervals during training
+            self.assertFalse(resp)
+
+    def test_end_iter_print_iter_stats(self):
+        """
+        Test end_iter ensures print_iter_stats is called.
+        """
+        iteration = 0
+        self.engine.engine_props['print_step'] = 1
+
+        with patch.object(self.engine.stats_obj, 'print_iter_stats') as mock_print_iter_stats:
+            self.engine.end_iter(iteration=iteration, print_flag=True)
+            mock_print_iter_stats.assert_called_once_with(max_iters=self.engine.engine_props['max_iters'],
+                                                          print_flag=True)
+
+    def test_end_iter_save_stats(self):
+        """
+        Test end_iter ensures save_stats is called.
+        """
+        iteration = 0
+        base_fp = "/path/to/output"
+        self.engine.engine_props['save_step'] = 1
+
+        with patch.object(self.engine.stats_obj, 'save_stats') as mock_save_stats:
+            self.engine.end_iter(iteration=iteration, base_fp=base_fp)
+            mock_save_stats.assert_called_once_with(base_fp=base_fp)
 
 
 if __name__ == '__main__':
