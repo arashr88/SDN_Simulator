@@ -186,6 +186,7 @@ class Routing:
         self.route_props.path_index_list = list()
         self.route_props.connection_index = None
 
+    # TODO: Put all pre-loaded stuff in a JSON or similar file structure
     def load_k_shortest(self):
         """
         Load the k-shortest paths from an external file.
@@ -194,14 +195,15 @@ class Routing:
         src_des_list = [int(self.sdn_props.source), int(self.sdn_props.destination)]
         
         path_cnt = 0
-        for item in loaded_data_dict:
-            cnt = 0
-            first_node = item[5][0][0][0][0]
-            last_node = item[5][0][0][0][-1]
+        for pre_comp_matrix in loaded_data_dict:
+            paths_calculated = 0
+            src_dest_index = 5
+            first_node = pre_comp_matrix[src_dest_index][0][0][0][0]
+            last_node = pre_comp_matrix[src_dest_index][0][0][0][-1]
             if first_node in src_des_list and last_node in src_des_list:
                 self.route_props.connection_index = path_cnt
-                for path in item[5][0]:
-                    if cnt == self.engine_props['k_paths']:
+                for path in pre_comp_matrix[5][0]:
+                    if paths_calculated == self.engine_props['k_paths']:
                         break
                     if first_node == int(self.sdn_props.source):
                         temp_path = list(path[0])
@@ -210,16 +212,16 @@ class Routing:
 
                     
                     temp_path = list(map(str, temp_path))
-                    path_len = item[3][0][cnt]
+                    path_len = pre_comp_matrix[3][0][paths_calculated]
                     mod_formats_dict = sort_nested_dict_vals(original_dict=self.sdn_props.mod_formats_dict,
                                                     nested_key='max_length')
                     mod_formats_list = list(mod_formats_dict.keys())
                     self.route_props.paths_matrix.append(temp_path)
                     self.route_props.mod_formats_matrix.append(mod_formats_list[::-1])
                     self.route_props.weights_list.append(path_len)
-                    self.route_props.path_index_list.append(cnt)
+                    self.route_props.path_index_list.append(paths_calculated)
 
-                    cnt += 1
+                    paths_calculated += 1
                 break
             path_cnt += 1
 
