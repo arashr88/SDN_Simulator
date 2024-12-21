@@ -27,6 +27,7 @@ def assign_link_lengths(network_fp: str, node_pairs_dict: dict, constant_weight:
 
     return response_dict
 
+
 def assign_core_nodes(core_nodes_fp: str):
     """
     List a core nodes of network topology. 
@@ -53,7 +54,7 @@ def create_network(net_name: str, base_fp: str = None, const_weight: bool = Fals
     :return: The network spectrum database.
     :rtype: dict
     """
-    core_nodes= []
+    core_nodes_list = []
     if base_fp is None:
         base_fp = 'data/raw'
     else:
@@ -69,8 +70,8 @@ def create_network(net_name: str, base_fp: str = None, const_weight: bool = Fals
         network_fp = os.path.join(base_fp, 'USB6014.txt')
         if not is_only_core_node:
             core_nodes_fp = os.path.join(base_fp, 'USB6014_core_nodes.txt')
-            core_nodes = assign_core_nodes(core_nodes_fp=core_nodes_fp)  
+            core_nodes_list = assign_core_nodes(core_nodes_fp=core_nodes_fp)
     else:
         raise NotImplementedError(f"Unknown network name. Expected USNet, NSFNet, or Pan-European. Got: {net_name}")
 
-    return assign_link_lengths(constant_weight=const_weight, network_fp=network_fp, node_pairs_dict={}), core_nodes
+    return assign_link_lengths(constant_weight=const_weight, network_fp=network_fp, node_pairs_dict={}), core_nodes_list
