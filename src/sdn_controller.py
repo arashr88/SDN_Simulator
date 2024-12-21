@@ -151,35 +151,51 @@ class SDNController:
 
             self.sdn_props.is_sliced = False
 
-    def _handle_dynamic_slicing(self, path_list: list, path_index: int, forced_segments: int ):
+    def _handle_congestion(self, remaining_bw):
+        """
+        Handles the case where allocation fails due to congestion.
+        """
+        self.sdn_props.was_routed = False
+        self.sdn_props.block_reason = 'congestion'
+        self.sdn_props.num_trans = 1
+
+        if remaining_bw != int(self.sdn_props.bandwidth):
+            self.release()
+
+        self.sdn_props.is_sliced = False
+
+    def _handle_dynamic_slicing(self, path_list: list, path_index: int, forced_segments: int):
+        """
+        Handles dynamic slicing for a network request.
+        """
         remaining_bw = int(self.sdn_props.bandwidth)
+        # TODO: Ignored?
         path_len = find_path_len(path_list=path_list, topology=self.engine_props['topology'])
-        bw_mod_dict = sort_dict_keys(dictionary=self.engine_props['mod_per_bw'])
+        bw_mod_dict = sort_dict_keys(self.engine_props['mod_per_bw'])
+
         self.spectrum_obj.spectrum_props.path_list = path_list
         self.sdn_props.num_trans = 0
+
         while remaining_bw > 0:
-            if self.engine_props['fixed_grid']:
-                self.sdn_props.was_routed = True
-                mod_format, bw = self.spectrum_obj.get_spectrum_dynamic_slicing(mod_format_list = [], path_index = path_index)
-                if self.spectrum_obj.spectrum_props.is_free:
-                    self.allocate()
-                    dedicated_bw = bw if remaining_bw > bw else remaining_bw
-                    self._update_req_stats(bandwidth=str(dedicated_bw))
-                    remaining_bw -= bw
-                    self.sdn_props.num_trans += 1
-                    self.sdn_props.is_sliced = True
-                else:
-                    self.sdn_props.was_routed = False
-                    self.sdn_props.block_reason = 'congestion'
-                    self.sdn_props.num_trans = 1
-                    if remaining_bw != int(self.sdn_props.bandwidth):
-                        self.release()
-                    self.sdn_props.is_sliced = False
-                    break
+            if not self.engine_props['fixed_grid']:
+                raise NotImplementedError("Dynamic slicing for non-fixed grid is not implemented.")
+
+            # TODO: Mod format list ignored?
+            self.sdn_props.was_routed = True
+            mod_format, bw = self.spectrum_obj.get_spectrum_dynamic_slicing(
+                mod_format_list=[], path_index=path_index
+            )
+
+            if self.spectrum_obj.spectrum_props.is_free:
+                self.allocate()
+                dedicated_bw = min(bw, remaining_bw)
+                self._update_req_stats(bandwidth=str(dedicated_bw))
+                remaining_bw -= bw
+                self.sdn_props.num_trans += 1
+                self.sdn_props.is_sliced = True
             else:
-                # TODO: develop dynamic slicing to flexigrid 
-                raise NotImplementedError("TO BE DEVELOPED")
-                
+                self._handle_congestion(remaining_bw=remaining_bw)
+                break
 
     def _init_req_stats(self):
         self.sdn_props.bandwidth_list = list()
@@ -241,7 +257,8 @@ class SDNController:
                     if segment_slicing or force_slicing or forced_segments > 1:
                         force_slicing = True
                         if self.engine_props['dynamic_lps']:
-                            self._handle_dynamic_slicing(path_list= path_list, path_index= path_index, forced_segments= force_slicing )
+                            self._handle_dynamic_slicing(path_list=path_list, path_index=path_index,
+                                                         forced_segments=force_slicing)
                             if not self.sdn_props.was_routed:
                                 continue
                         else:
