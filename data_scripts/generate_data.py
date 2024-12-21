@@ -38,7 +38,6 @@ def create_pt(cores_per_link: int, net_spec_dict: dict):
             'span_length': 100,
         }
         topology_dict['links'][link_num] = link_props_dict
-
     return topology_dict
 
 

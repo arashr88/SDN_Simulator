@@ -20,7 +20,7 @@ class TestSetupHelpers(unittest.TestCase):
             'sim_start': '00:00',
             'const_link_weight': 10,
             'cores_per_link': 7,
-            'is_only_core_node': True
+            'is_only_core_node': False
         }
         self.bw_info_dict = {'bandwidth': 100}
         self.network_dict = {'nodes': [], 'links': []}
@@ -53,7 +53,8 @@ class TestSetupHelpers(unittest.TestCase):
         mock_create_network.assert_called_once_with(
             base_fp=self.base_fp,
             const_weight=self.engine_props['const_link_weight'],
-            net_name=self.engine_props['network']
+            net_name=self.engine_props['network'],
+            is_only_core_node=False,
         )
         mock_create_pt.assert_called_once_with(
             cores_per_link=self.engine_props['cores_per_link'],
