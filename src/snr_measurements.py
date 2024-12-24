@@ -308,6 +308,34 @@ class SnrMeasurements:
 
         return resp, cross_talk
 
+    def find_num_adjacent_cores(self):
+        """
+        Finds the number of adjacent cores for selected core.
+
+        :return: The number of adjacent cores.
+        """
+        resp = 0
+        if self.engine_props['cores_per_link'] == 4:
+            resp = 2
+        elif self.engine_props['cores_per_link'] == 7:
+            resp = 6 if self.spectrum_props.core_num == 6 else 3
+        elif self.engine_props['cores_per_link'] == 13:
+            if self.spectrum_props.core_num < 6:
+                resp = 2
+            elif 6 <= self.spectrum_props.core_num < 12:
+                resp = 5
+            elif self.spectrum_props.core_num == 12:
+                resp = 6
+        elif self.engine_props['cores_per_link'] == 19:
+            if self.spectrum_props.core_num >= 12:
+                resp = 6
+            elif self.spectrum_props.core_num % 2 == 0:
+                resp = 3
+            else:
+                resp = 4
+        return resp
+
+
     def check_snr_ext(self, path_index: int):
         """
         Checks the SNR on a single request using the external resources.
@@ -316,8 +344,12 @@ class SnrMeasurements:
         :rtype: tuple
         """
         # Fetch loaded files
+        if self.engine_props['multi_fiber']:
+            num_adjacent = 0
+        else:
+            num_adjacent = self.find_num_adjacent_cores()
         loaded_data, loaded_data_gsnr = get_loaded_files(
-            self.spectrum_props.core_num, self.engine_props['cores_per_link'], self.snr_props.file_mapping_dict
+            num_adjacent, self.engine_props['cores_per_link'], self.snr_props.file_mapping_dict
         )
 
         # Compute slot index
@@ -342,8 +374,12 @@ class SnrMeasurements:
         :rtype: tuple
         """
         # Fetch loaded files
+        if self.engine_props['multi_fiber']:
+            num_adjacent = 0
+        else:
+            num_adjacent = self.find_num_adjacent_cores()
         loaded_data, loaded_data_gsnr = get_loaded_files(
-            self.spectrum_props.core_num, self.engine_props['cores_per_link'], self.snr_props.file_mapping_dict
+            num_adjacent, self.engine_props['cores_per_link'], self.snr_props.file_mapping_dict
         )
 
         # Compute slot index
