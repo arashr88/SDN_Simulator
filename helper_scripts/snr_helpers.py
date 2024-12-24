@@ -11,7 +11,11 @@ def get_loaded_files(core_num, cores_per_link, file_mapping):
     :return: The loaded modulation format and GSNR data.
     :rtype: tuple
     """
-    key = (core_num, cores_per_link)
+    if core_num == 0:
+        key = 'multi_fiber'
+    else:
+        key = (core_num, cores_per_link)
+
     if key in file_mapping:
         return (
             np.load(file_mapping[key]['mf'], allow_pickle=True),
