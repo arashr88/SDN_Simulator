@@ -68,7 +68,7 @@ def create_network(net_name: str, base_fp: str = None, const_weight: bool = Fals
         network_fp = os.path.join(base_fp, 'europe_network.txt')
     elif net_name == 'USbackbone60':
         network_fp = os.path.join(base_fp, 'USB6014.txt')
-        if is_only_core_node:
+        if not is_only_core_node:
             core_nodes_fp = os.path.join(base_fp, 'USB6014_core_nodes.txt')
             core_nodes_list = assign_core_nodes(core_nodes_fp=core_nodes_fp)
     else:
