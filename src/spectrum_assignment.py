@@ -153,7 +153,14 @@ class SpectrumAssignment:
                 self.spec_help_obj.core_num = core_num
                 self.spec_help_obj.curr_band = band
                 was_allocated = self.spec_help_obj.check_super_channels(open_slots_matrix=open_slots_matrix, flag=flag)
-                if self._handle_snr_external(flag, open_slots_matrix) or was_allocated:
+                if was_allocated:
+                    if (self.engine_props['cores_per_link'] in [13, 19] and
+                        self.engine_props['snr_type'] == 'snr_e2e_external_resources' and not self.engine_props['multi_fiber']):
+                            if self._handle_snr_external(flag, open_slots_matrix):
+                                return
+                            else:
+                                self.spectrum_props.is_free = False
+                                continue
                     return
 
     def handle_first_last_priority_band(self, flag: str):
@@ -172,7 +179,14 @@ class SpectrumAssignment:
                 self.spec_help_obj.core_num = core_num
                 self.spec_help_obj.curr_band = band
                 was_allocated = self.spec_help_obj.check_super_channels(open_slots_matrix=open_slots_matrix, flag=flag)
-                if self._handle_snr_external(flag, open_slots_matrix) or was_allocated:
+                if was_allocated:
+                    if (self.engine_props['cores_per_link'] in [13, 19] and
+                        self.engine_props['snr_type'] == 'snr_e2e_external_resources' and not self.engine_props['multi_fiber']):
+                            if self._handle_snr_external(flag, open_slots_matrix):
+                                return
+                            else:
+                                self.spectrum_props.is_free = False
+                                continue
                     return
 
     def _handle_snr_external(self, flag, open_slots_matrix):
@@ -184,21 +198,19 @@ class SpectrumAssignment:
         :return: Whether the allocation was successful.
         :rtype: bool
         """
-        if not (self.engine_props['cores_per_link'] in [13, 19] and
-                self.engine_props['snr_type'] == 'snr_e2e_external_resources'):
-            return False
 
         for row in open_slots_matrix:
             while row:
-                was_allocated = self.spec_help_obj.check_super_channels(open_slots_matrix=open_slots_matrix, flag=flag)
-                snr_result = self.snr_obj.handle_snr_dynamic_slicing(self.sdn_props.path_index)[0]
-                if snr_result is not None:
-                    return True
+                row = self.snr_obj.check_snr_ext_open_slots(self.sdn_props.path_index, row)
+                if row:
+                    was_allocated = self.spec_help_obj.check_super_channels(open_slots_matrix=[row], flag=flag)
+                    if was_allocated:
+                        return True
+                    else:
+                        break
+                else:
+                    break
 
-                row.pop(0)  # Remove the first slot in the row if no valid SNR result
-
-                if all(len(row) == 0 for row in open_slots_matrix):
-                    return False
 
         return False
 
@@ -312,7 +324,7 @@ class SpectrumAssignment:
                     self.sdn_props.block_reason = None
                 return mod_format, bw
             else:
-                mod_format, bw = False
+                mod_format, bw = (False, False)
                 return mod_format, bw
         else:
             # TODO: Develop for flexigrid
