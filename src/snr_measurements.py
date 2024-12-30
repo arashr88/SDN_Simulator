@@ -400,6 +400,34 @@ class SnrMeasurements:
         snr_val = loaded_data_gsnr[self.route_props.connection_index][slot_index][path_index]
 
         return mod_format, supported_bw, snr_val
+    
+    def check_snr_ext_open_slots(self, path_index, open_slots_list):
+        """
+        Checks the SNR on a single request using the external resources for slicing.
+
+        :return: Modulation format, supported bandwidth, and SNR value.
+        :rtype: tuple
+        """
+        # Fetch loaded files
+        if self.engine_props['multi_fiber']:
+            num_adjacent = 0
+        else:
+            num_adjacent = self.find_num_adjacent_cores()
+        loaded_data, loaded_data_gsnr = get_loaded_files(
+            num_adjacent, self.engine_props['cores_per_link'], self.snr_props.file_mapping_dict
+        )
+
+
+        # Retrieve modulation format and supported bandwidth
+        for open_slot in open_slots_list[:]:
+            slot_index = get_slot_index(
+                self.spectrum_props.curr_band, open_slot, self.engine_props
+            )
+            mod_format_key = loaded_data[self.route_props.connection_index][slot_index][path_index]
+            if mod_format_key == 0:
+                open_slots_list.remove(open_slot)
+
+        return open_slots_list
 
     def handle_snr(self, path_index):
         """
