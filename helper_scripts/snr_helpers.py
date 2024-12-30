@@ -56,8 +56,8 @@ def compute_response(mod_format, snr_props, spectrum_props, sdn_props):
     :rtype: bool
     """
     is_valid_modulation = (
-            snr_props.mod_format_mapping_dict[mod_format] == spectrum_props.modulation
-    )
+                snr_props.mod_format_mapping_dict[mod_format] == spectrum_props.modulation
+        )
     meets_bw_requirements = (
             snr_props.bw_mapping_dict[spectrum_props.modulation] >= int(sdn_props.bandwidth)
     )
