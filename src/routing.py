@@ -191,7 +191,12 @@ class Routing:
         """
         Load the k-shortest paths from an external file.
         """
-        loaded_data_dict = np.load('USB6014-10SP.npy', allow_pickle=True)
+        if self.engine_props['network'] == 'USbackbone60':
+            loaded_data_dict = np.load('USB6014-10SP.npy', allow_pickle=True)
+        elif self.engine_props['network'] == 'Spainbackbone30':
+            loaded_data_dict = np.load('SPNB3014-10SP.npy', allow_pickle=True)
+        else:
+            raise ValueError(f"Missing precalculated path dataset for '{self.engine_props['network']}' topology")
         src_des_list = [int(self.sdn_props.source), int(self.sdn_props.destination)]
         
         path_cnt = 0
