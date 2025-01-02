@@ -173,7 +173,9 @@ class RLHelpers:
         :return: If there are available spectral slots.
         :rtype: bool
         """
-        spectrum_obj = SpectrumAssignment(engine_props=engine_props, sdn_props=sdn_props)
+        # TODO: Fix this in RL merge
+        route_props = None
+        spectrum_obj = SpectrumAssignment(engine_props=engine_props, sdn_props=sdn_props, route_props=route_props)
 
         spectrum_obj.spectrum_props.forced_index = None
         spectrum_obj.spectrum_props.forced_core = None

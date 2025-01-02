@@ -138,7 +138,8 @@ class SimStats:
             for modulation in obj.keys():
                 self.stats_props.weights_dict[bandwidth][modulation] = list()
                 self.stats_props.mods_used_dict[bandwidth][modulation] = 0
-                if modulation not in self.stats_props.mods_used_dict or isinstance(self.stats_props.mods_used_dict[modulation]['length']['overall'], dict):
+                if modulation not in self.stats_props.mods_used_dict or isinstance(
+                        self.stats_props.mods_used_dict[modulation]['length']['overall'], dict):
                     self.stats_props.mods_used_dict[modulation] = dict()
                     self.stats_props.mods_used_dict[modulation]['length'] = dict()
                     self.stats_props.mods_used_dict[modulation]['length']['overall'] = list()
@@ -202,6 +203,7 @@ class SimStats:
 
         self.stats_props.sim_block_list.append(blocking_prob)
         self.stats_props.sim_br_block_list.append(bit_rate_blocking_prob)
+
     def _handle_iter_lists(self, sdn_data: object):
         for stat_key in sdn_data.stat_key_list:
             # TODO: Eventually change this name (sdn_data)
@@ -226,7 +228,6 @@ class SimStats:
                     self.stats_props.modulation_list.append(int(data))
                 elif stat_key == 'bandwidth_list':
                     self.stats_props.bandwidth_list.append(int(data))
-                
 
     def iter_update(self, req_data: dict, sdn_data: object):
         """
@@ -248,7 +249,7 @@ class SimStats:
             self.stats_props.hops_list.append(num_hops)
 
             path_len = find_path_len(path_list=sdn_data.path_list, topology=self.topology)
-            self.stats_props.lengths_list.append(round(float(path_len),2))
+            self.stats_props.lengths_list.append(round(float(path_len), 2))
 
             self._handle_iter_lists(sdn_data=sdn_data)
             self.stats_props.route_times_list.append(sdn_data.route_time)
@@ -257,7 +258,7 @@ class SimStats:
             mod_format = sdn_data.modulation_list[0]
 
             self.bit_rate_request += int(sdn_data.bandwidth)
-            self.stats_props.weights_dict[bandwidth][mod_format].append(round(float(sdn_data.path_weight),2))
+            self.stats_props.weights_dict[bandwidth][mod_format].append(round(float(sdn_data.path_weight), 2))
 
     def _get_iter_means(self):
         for _, curr_snapshot in self.stats_props.snapshots_dict.items():
@@ -284,16 +285,17 @@ class SimStats:
                     if not isinstance(value, list):
                         continue
                     if len(value) == 0:
-                        self.stats_props.mods_used_dict[modulation] ['length'][key] = {'mean': None, 'std': None, 'min': None, 'max': None} 
+                        self.stats_props.mods_used_dict[modulation]['length'][key] = {'mean': None, 'std': None,
+                                                                                      'min': None, 'max': None}
                     else:
                         # TODO: Is this ever equal to one?
                         if len(value) == 1:
                             deviation = 0.0
                         else:
                             deviation = stdev(value)
-                        self.stats_props.mods_used_dict[modulation]['length'][key] = {'mean': round(float(mean(value)),2), 'std': round(float(deviation),2),
-                                                                                        'min': round(float(min(value)),2), 'max': round(float(max(value)),2)}
-                        
+                        self.stats_props.mods_used_dict[modulation]['length'][key] = {
+                            'mean': round(float(mean(value)), 2), 'std': round(float(deviation), 2),
+                            'min': round(float(min(value)), 2), 'max': round(float(max(value)), 2)}
 
     def end_iter_update(self):
         """
@@ -324,13 +326,13 @@ class SimStats:
         self.bit_rate_block_mean = mean(self.stats_props.sim_br_block_list)
         if len(self.stats_props.sim_block_list) <= 1:
             return False
-        
+
         self.block_variance = variance(self.stats_props.sim_block_list)
         self.bit_rate_block_variance = variance(self.stats_props.sim_br_block_list)
 
         if self.block_mean == 0.0:
             return False
-        
+
         try:
             # 1.645 for 90% confidence level and 1.96 for 95% confidence level
             block_ci_rate = 1.96 * (math.sqrt(self.block_variance) / math.sqrt(len(self.stats_props.sim_block_list)))
@@ -338,7 +340,8 @@ class SimStats:
             block_ci_percent = ((2 * block_ci_rate) / self.block_mean) * 100
             self.block_ci_percent = block_ci_percent
             # bit rate blcoking
-            bit_rate_block_ci = 1.96 * (math.sqrt(self.bit_rate_block_variance) / math.sqrt(len(self.stats_props.sim_br_block_list)))
+            bit_rate_block_ci = 1.96 * (
+                        math.sqrt(self.bit_rate_block_variance) / math.sqrt(len(self.stats_props.sim_br_block_list)))
             self.bit_rate_block_ci = bit_rate_block_ci
             bit_rate_block_ci_percent = ((2 * bit_rate_block_ci) / self.bit_rate_block_mean) * 100
             self.bit_rate_block_ci_percent = bit_rate_block_ci_percent
@@ -399,9 +402,9 @@ class SimStats:
                     self.save_dict['iter_stats'][self.iteration][f'{save_key}min'] = None
                     self.save_dict['iter_stats'][self.iteration][f'{save_key}max'] = None
                 else:
-                    self.save_dict['iter_stats'][self.iteration][f'{save_key}mean'] = round(float(mean(stat_array)),2)
-                    self.save_dict['iter_stats'][self.iteration][f'{save_key}min'] = round(float(min(stat_array)),2)
-                    self.save_dict['iter_stats'][self.iteration][f'{save_key}max'] = round(float(max(stat_array)),2)
+                    self.save_dict['iter_stats'][self.iteration][f'{save_key}mean'] = round(float(mean(stat_array)), 2)
+                    self.save_dict['iter_stats'][self.iteration][f'{save_key}min'] = round(float(min(stat_array)), 2)
+                    self.save_dict['iter_stats'][self.iteration][f'{save_key}max'] = round(float(max(stat_array)), 2)
             else:
                 if stat_key in ['start_slot_list', 'end_slot_list'] and not self.engine_props['save_start_end_slots']:
                     self.save_dict['iter_stats'][self.iteration][stat_key] = []
