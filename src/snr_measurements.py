@@ -349,7 +349,7 @@ class SnrMeasurements:
         else:
             num_adjacent = self.find_num_adjacent_cores()
         loaded_data, loaded_data_gsnr = get_loaded_files(
-            num_adjacent, self.engine_props['cores_per_link'], self.snr_props.file_mapping_dict
+            num_adjacent, self.engine_props['cores_per_link'], self.snr_props.file_mapping_dict[self.engine_props['network']]
         )
 
         # Compute slot index
@@ -379,7 +379,7 @@ class SnrMeasurements:
         else:
             num_adjacent = self.find_num_adjacent_cores()
         loaded_data, loaded_data_gsnr = get_loaded_files(
-            num_adjacent, self.engine_props['cores_per_link'], self.snr_props.file_mapping_dict
+            num_adjacent, self.engine_props['cores_per_link'], self.snr_props.file_mapping_dict[self.engine_props['network']]
         )
 
         # Compute slot index
@@ -414,7 +414,7 @@ class SnrMeasurements:
         else:
             num_adjacent = self.find_num_adjacent_cores()
         loaded_data, loaded_data_gsnr = get_loaded_files(
-            num_adjacent, self.engine_props['cores_per_link'], self.snr_props.file_mapping_dict
+            num_adjacent, self.engine_props['cores_per_link'], self.snr_props.file_mapping_dict[self.engine_props['network']]
         )
 
 
