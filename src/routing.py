@@ -218,6 +218,8 @@ class Routing:
                     
                     temp_path = list(map(str, temp_path))
                     path_len = pre_comp_matrix[3][0][paths_calculated]
+                    if path_len.dtype != np.float64:
+                        path_len = path_len.astype(np.float64)
                     mod_formats_dict = sort_nested_dict_vals(original_dict=self.sdn_props.mod_formats_dict,
                                                     nested_key='max_length')
                     mod_formats_list = list(mod_formats_dict.keys())
