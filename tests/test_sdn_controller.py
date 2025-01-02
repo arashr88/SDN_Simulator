@@ -109,8 +109,7 @@ class TestSDNController(unittest.TestCase):
     @patch('src.sdn_controller.SDNController._update_req_stats')
     @patch('src.routing.Routing.get_route')
     @patch('src.spectrum_assignment.SpectrumAssignment.get_spectrum')
-    def test_handle_event_arrival(self, mock_allocate, mock_stats, mock_route,
-                                  mock_spectrum):  # pylint: disable=unused-argument
+    def test_handle_event_arrival(self, mock_allocate, mock_stats, mock_route, mock_spectrum):  # pylint: disable=unused-argument
         """
         Tests the handle event with an arrival request.
         """

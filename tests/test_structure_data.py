@@ -33,7 +33,7 @@ class TestNetworkFunctions(unittest.TestCase):
         """
         Test create network.
         """
-        mock_assign_link_lengths.return_value = ({'link_lengths': 'mocked'})
+        mock_assign_link_lengths.return_value = {'link_lengths': 'mocked'}
 
         net_name = 'USNet'
         response = create_network(net_name=net_name, const_weight=False)

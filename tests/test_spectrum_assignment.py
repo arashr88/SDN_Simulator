@@ -10,12 +10,15 @@ from src.spectrum_assignment import SpectrumAssignment
 # TODO: Add test when multi-fiber is true
 # TODO: Add test when network is just USNet
 # TODO: Either add or mock file
-class RouteProps:
+class RouteProps:  # pylint: disable=too-few-public-methods
+    """
+    Mocks the route props class.
+    """
+
     def __init__(self, paths_matrix=None, mod_formats_matrix=None, weights_list=None,
                  connection_index=0, path_index=0, input_power=0.001,
                  freq_spacing=12500000000.0, mci_worst=6.334975555658596e-27,
                  max_link_length=None, span_len=100.0, max_span=None):
-
         self.paths_matrix = paths_matrix if paths_matrix is not None else []
         self.mod_formats_matrix = mod_formats_matrix if mod_formats_matrix is not None else []
         self.weights_list = weights_list if weights_list is not None else []
@@ -186,7 +189,7 @@ class TestSpectrumAssignment(unittest.TestCase):
         self.spec_assign.spectrum_props.slots_needed = 2
 
         # Simulate side effects of check_super_channels
-        def mock_check_super_channels_effect(*args, **kwargs):
+        def mock_check_super_channels_effect(*args, **kwargs):  # pylint: disable=unused-argument
             self.spec_assign.spectrum_props.start_slot = 5
             self.spec_assign.spectrum_props.end_slot = 8
             self.spec_assign.spectrum_props.curr_band = 'c'
@@ -200,9 +203,6 @@ class TestSpectrumAssignment(unittest.TestCase):
             self.assertEqual(self.spec_assign.spectrum_props.start_slot, 5)
             self.assertEqual(self.spec_assign.spectrum_props.end_slot, 8)
             self.assertEqual(self.spec_assign.spectrum_props.curr_band, 'c')
-
-    from unittest.mock import patch
-    import numpy as np
 
     def test_first_last_priority_bsc_snr_external(self):
         """Test handle_first_last_priority_bsc with SNR external resources."""
@@ -228,7 +228,7 @@ class TestSpectrumAssignment(unittest.TestCase):
         self.spec_assign.engine_props['snr_type'] = 'snr_e2e_external_resources'
 
         # Simulate the behavior of check_super_channels and handle_snr_dynamic_slicing
-        def mock_check_super_channels_effect(*args, **kwargs):
+        def mock_check_super_channels_effect(*args, **kwargs):  # pylint: disable=unused-argument
             self.spec_assign.spectrum_props.is_free = True
             self.spec_assign.spectrum_props.start_slot = 5
             self.spec_assign.spectrum_props.end_slot = 8
