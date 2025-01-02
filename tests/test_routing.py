@@ -23,7 +23,8 @@ class TestRouting(unittest.TestCase):
             'xt_type': 'with_length',
             'beta': 0.5,
             'route_method': 'k_shortest_path',
-            'pre_calc_mod_selection': False
+            'pre_calc_mod_selection': False,
+            'network': 'USbackbone60',
         }
         self.engine_props['topology'].add_edge('A', 'B', weight=1, xt_cost=10, length=1)
         self.engine_props['topology'].add_edge('B', 'C', weight=1, xt_cost=5, length=1)
@@ -51,7 +52,7 @@ class TestRouting(unittest.TestCase):
                 None,  # Placeholder for irrelevant indices
                 None,
                 None,
-                [[10]],  # Path lengths for index 3
+                [[np.float64(10)]],  # Path lengths for index 3
                 [None],  # Placeholder for irrelevant indices (index 4)
                 [
                     [

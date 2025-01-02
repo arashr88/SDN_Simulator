@@ -79,4 +79,6 @@ def create_network(net_name: str, base_fp: str = None, const_weight: bool = Fals
     else:
         raise NotImplementedError(f"Unknown network name. Expected USNet, NSFNet, or Pan-European. Got: {net_name}")
 
-    return assign_link_lengths(constant_weight=const_weight, network_fp=network_fp, node_pairs_dict={}), core_nodes_list
+    resp = assign_link_lengths(constant_weight=const_weight, network_fp=network_fp, node_pairs_dict={}), core_nodes_list
+
+    return resp

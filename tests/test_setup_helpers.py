@@ -10,6 +10,7 @@ class TestSetupHelpers(unittest.TestCase):
     Tests the setup_helpers.py script.
     """
 
+    # TODO: Test when core node is false
     def setUp(self):
         self.base_fp = '/fake/base/path'
         self.engine_props = {
@@ -20,8 +21,9 @@ class TestSetupHelpers(unittest.TestCase):
             'sim_start': '00:00',
             'const_link_weight': 10,
             'cores_per_link': 7,
-            'is_only_core_node': False
+            'is_only_core_node': True,
         }
+        self.core_nodes = list()
         self.bw_info_dict = {'bandwidth': 100}
         self.network_dict = {'nodes': [], 'links': []}
         self.pt_info = {'cores': 7, 'specifications': {}}
@@ -36,7 +38,7 @@ class TestSetupHelpers(unittest.TestCase):
         """ Tests create input. """
         # Setup mock return values
         mock_create_bw_info.return_value = self.bw_info_dict
-        mock_create_network.return_value = self.network_dict
+        mock_create_network.return_value = self.network_dict, self.core_nodes
         mock_create_pt.return_value = self.pt_info
 
         # Call the function
@@ -54,7 +56,7 @@ class TestSetupHelpers(unittest.TestCase):
             base_fp=self.base_fp,
             const_weight=self.engine_props['const_link_weight'],
             net_name=self.engine_props['network'],
-            is_only_core_node=False,
+            is_only_core_node=True,
         )
         mock_create_pt.assert_called_once_with(
             cores_per_link=self.engine_props['cores_per_link'],

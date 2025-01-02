@@ -7,6 +7,28 @@ from src.spectrum_assignment import SpectrumAssignment
 
 
 # TODO: Add fixed grid tests
+# TODO: Add test when multi-fiber is true
+# TODO: Add test when network is just USNet
+# TODO: Either add or mock file
+class RouteProps:
+    def __init__(self, paths_matrix=None, mod_formats_matrix=None, weights_list=None,
+                 connection_index=0, path_index=0, input_power=0.001,
+                 freq_spacing=12500000000.0, mci_worst=6.334975555658596e-27,
+                 max_link_length=None, span_len=100.0, max_span=None):
+
+        self.paths_matrix = paths_matrix if paths_matrix is not None else []
+        self.mod_formats_matrix = mod_formats_matrix if mod_formats_matrix is not None else []
+        self.weights_list = weights_list if weights_list is not None else []
+        self.connection_index = connection_index
+        self.path_index = path_index if path_index is not None else []
+        self.input_power = input_power
+        self.freq_spacing = freq_spacing
+        self.mci_worst = mci_worst
+        self.max_link_length = max_link_length
+        self.span_len = span_len
+        self.max_span = max_span
+
+
 class TestSpectrumAssignment(unittest.TestCase):
     """Unit tests for SpectrumAssignment class."""
 
@@ -30,7 +52,11 @@ class TestSpectrumAssignment(unittest.TestCase):
             'band_list': ['c'],
             'allocation_method': 'first_fit',
             'fixed_grid': False,
-            'spectrum_priority': 'BSC'
+            'spectrum_priority': 'BSC',
+            'multi_fiber': False,
+            'network': 'USbackbone60',
+            'l_band': 2,
+            'c_band': 1,
         }
         sdn_props = MagicMock()
         sdn_props.net_spec_dict = {
@@ -44,17 +70,12 @@ class TestSpectrumAssignment(unittest.TestCase):
         }
 
         route_obj = MagicMock
-        route_obj.route_props = {
-            'paths_matrix': [], 'mod_formats_matrix': [], 'weights_list': [],
-            'connection_index': [],
-            'path_index': [], 'input_power': 0.001, 'freq_spacing': 12500000000.0,
-            'mci_worst': 6.334975555658596e-27, 'max_link_length': None, 'span_len': 100.0,
-            'max_span': None
-        }
+        route_obj.route_props = RouteProps()
 
         self.spec_assign = SpectrumAssignment(engine_props=engine_props, sdn_props=sdn_props,
                                               route_props=route_obj.route_props)
         self.spec_assign.spectrum_props.slots_needed = 2
+        self.spec_assign.spectrum_props.core_num = 0
         self.spec_assign.spectrum_props.path_list = ['source', 'dest']
         self.spec_assign.spectrum_props.cores_matrix = cores_matrix
 
@@ -180,16 +201,24 @@ class TestSpectrumAssignment(unittest.TestCase):
             self.assertEqual(self.spec_assign.spectrum_props.end_slot, 8)
             self.assertEqual(self.spec_assign.spectrum_props.curr_band, 'c')
 
+    from unittest.mock import patch
+    import numpy as np
+
     def test_first_last_priority_bsc_snr_external(self):
         """Test handle_first_last_priority_bsc with SNR external resources."""
+        # Set up engine properties
         self.spec_assign.engine_props['spectrum_priority'] = 'BSC'
         self.spec_assign.engine_props['allocation_method'] = 'priority_first'
         self.spec_assign.engine_props['cores_per_link'] = 13
         self.spec_assign.engine_props['snr_type'] = 'snr_e2e_external_resources'
 
-        with patch.object(self.spec_assign.snr_obj, 'handle_snr_dynamic_slicing', return_value=(True, 0.5)):
-            self.spec_assign.handle_first_last_priority_bsc('priority_first')
-            self.assertTrue(self.spec_assign.spectrum_props.is_free)
+        mock_loaded_data = np.ones((1, 10, 4))
+        with patch('numpy.load', return_value=mock_loaded_data):
+            # Mock handle_snr_dynamic_slicing method
+            with patch.object(self.spec_assign.snr_obj, 'handle_snr_dynamic_slicing', return_value=(True, 0.5)):
+                self.spec_assign.handle_first_last_priority_bsc('priority_first')
+                # Assertion to validate spectrum properties
+                self.assertTrue(self.spec_assign.spectrum_props.is_free)
 
     def test_first_last_priority_band_snr_external(self):
         """Test handle_first_last_priority_band with SNR external resources."""
@@ -206,16 +235,18 @@ class TestSpectrumAssignment(unittest.TestCase):
             self.spec_assign.spectrum_props.curr_band = 'c'
             return True
 
-        with patch.object(self.spec_assign.spec_help_obj, 'check_super_channels',
-                          side_effect=mock_check_super_channels_effect), \
-                patch.object(self.spec_assign.snr_obj, 'handle_snr_dynamic_slicing', return_value=(True, 0.5)):
-            self.spec_assign.handle_first_last_priority_band('priority_last')
+        mock_loaded_data = np.ones((1, 10, 4))
+        with patch('numpy.load', return_value=mock_loaded_data):
+            with patch.object(self.spec_assign.spec_help_obj, 'check_super_channels',
+                              side_effect=mock_check_super_channels_effect), \
+                    patch.object(self.spec_assign.snr_obj, 'handle_snr_dynamic_slicing', return_value=(True, 0.5)):
+                self.spec_assign.handle_first_last_priority_band('priority_last')
 
-            # Verify that spectrum allocation was successful
-            self.assertTrue(self.spec_assign.spectrum_props.is_free, "Expected is_free to be True.")
-            self.assertEqual(self.spec_assign.spectrum_props.start_slot, 5)
-            self.assertEqual(self.spec_assign.spectrum_props.end_slot, 8)
-            self.assertEqual(self.spec_assign.spectrum_props.curr_band, 'c')
+                # Verify that spectrum allocation was successful
+                self.assertTrue(self.spec_assign.spectrum_props.is_free, "Expected is_free to be True.")
+                self.assertEqual(self.spec_assign.spectrum_props.start_slot, 5)
+                self.assertEqual(self.spec_assign.spectrum_props.end_slot, 8)
+                self.assertEqual(self.spec_assign.spectrum_props.curr_band, 'c')
 
 
 if __name__ == '__main__':
