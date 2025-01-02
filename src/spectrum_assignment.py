@@ -112,11 +112,11 @@ class SpectrumAssignment:
         if flag in ('last_fit', 'priority_last'):
             return [list(map(itemgetter(1), g))[::-1] for k, g in
                     itertools.groupby(enumerate(open_slots_arr), lambda i_x: i_x[0] - i_x[1])]
-        elif flag in ('first_fit', 'priority_first', 'forced_index'):
+        if flag in ('first_fit', 'priority_first', 'forced_index'):
             return [list(map(itemgetter(1), g)) for k, g in
                     itertools.groupby(enumerate(open_slots_arr), lambda i_x: i_x[0] - i_x[1])]
-        else:
-            raise NotImplementedError(f"Invalid flag, got: {flag} and expected 'last_fit' or 'first_fit'.")
+
+        raise NotImplementedError(f"Invalid flag, got: {flag} and expected 'last_fit' or 'first_fit'.")
 
     def handle_first_last(self, flag: str):
         """
@@ -155,12 +155,14 @@ class SpectrumAssignment:
                 was_allocated = self.spec_help_obj.check_super_channels(open_slots_matrix=open_slots_matrix, flag=flag)
                 if was_allocated:
                     if (self.engine_props['cores_per_link'] in [13, 19] and
-                        self.engine_props['snr_type'] == 'snr_e2e_external_resources' and not self.engine_props['multi_fiber']):
-                            if self._handle_snr_external(flag, open_slots_matrix):
-                                return
-                            else:
-                                self.spectrum_props.is_free = False
-                                continue
+                            self.engine_props['snr_type'] == 'snr_e2e_external_resources' and not self.engine_props[
+                                'multi_fiber']):
+                        if self._handle_snr_external(flag, open_slots_matrix):
+                            return
+
+                        self.spectrum_props.is_free = False
+                        continue
+
                     return
 
     def handle_first_last_priority_band(self, flag: str):
@@ -181,12 +183,13 @@ class SpectrumAssignment:
                 was_allocated = self.spec_help_obj.check_super_channels(open_slots_matrix=open_slots_matrix, flag=flag)
                 if was_allocated:
                     if (self.engine_props['cores_per_link'] in [13, 19] and
-                        self.engine_props['snr_type'] == 'snr_e2e_external_resources' and not self.engine_props['multi_fiber']):
-                            if self._handle_snr_external(flag, open_slots_matrix):
-                                return
-                            else:
-                                self.spectrum_props.is_free = False
-                                continue
+                            self.engine_props['snr_type'] == 'snr_e2e_external_resources' and not self.engine_props[
+                                'multi_fiber']):
+                        if self._handle_snr_external(flag, open_slots_matrix):
+                            return
+
+                        self.spectrum_props.is_free = False
+                        continue
                     return
 
     def _handle_snr_external(self, flag, open_slots_matrix):
@@ -206,11 +209,10 @@ class SpectrumAssignment:
                     was_allocated = self.spec_help_obj.check_super_channels(open_slots_matrix=[row], flag=flag)
                     if was_allocated:
                         return True
-                    else:
-                        break
-                else:
+
                     break
 
+                break
 
         return False
 
@@ -299,7 +301,7 @@ class SpectrumAssignment:
             self.spectrum_props.block_reason = 'congestion'
             continue
 
-    def get_spectrum_dynamic_slicing(self, mod_format_list: list, slice_bandwidth: str = None, path_index: int = None):
+    def get_spectrum_dynamic_slicing(self, mod_format_list: list, slice_bandwidth: str = None, path_index: int = None):  # pylint: disable=unused-argument
         """
         Controls the class, attempts to find an available spectrum.
 
@@ -312,8 +314,8 @@ class SpectrumAssignment:
             self.spectrum_props.slots_needed = 1
             self._get_spectrum()
             if self.spectrum_props.is_free:
-                mod_format, bw, snr_val = self.snr_obj.handle_snr_dynamic_slicing(path_index)
-                if bw == 0:
+                mod_format, bandwidth, snr_val = self.snr_obj.handle_snr_dynamic_slicing(path_index)
+                if bandwidth == 0:
                     self.spectrum_props.is_free = False
                     self.sdn_props.block_reason = "xt_threshold"
                 else:
@@ -322,11 +324,11 @@ class SpectrumAssignment:
                     self.spectrum_props.xt_cost = snr_val
                     self.spectrum_props.is_free = True
                     self.sdn_props.block_reason = None
-                return mod_format, bw
-            else:
-                mod_format, bw = (False, False)
-                return mod_format, bw
-        else:
-            # TODO: Develop for flexigrid
-            mod_format, bw = False
-            return mod_format, bw
+                return mod_format, bandwidth
+
+            mod_format, bandwidth = (False, False)
+            return mod_format, bandwidth
+
+        # TODO: Develop for flexigrid
+        mod_format, bandwidth = False, False
+        return mod_format, bandwidth

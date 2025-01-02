@@ -52,8 +52,8 @@ class Engine:
                 "is_sliced": sdn_props.is_sliced,
                 "was_routed": sdn_props.was_routed,
                 "core_list": sdn_props.core_list,
-                "start_slot_list":sdn_props.start_slot_list,
-                "end_slot_list":sdn_props.end_slot_list,
+                "start_slot_list": sdn_props.start_slot_list,
+                "end_slot_list": sdn_props.end_slot_list,
                 "bandwidth_list": sdn_props.bandwidth_list,
                 "snr_cost": sdn_props.xt_list,
                 # TODO: Update
@@ -197,10 +197,10 @@ class Engine:
         if (iteration + 1) % self.engine_props['print_step'] == 0 or iteration == 0:
             self.stats_obj.print_iter_stats(max_iters=self.engine_props['max_iters'], print_flag=print_flag)
 
-        if (iteration + 1) % self.engine_props['save_step'] == 0 or iteration == 0 or (iteration + 1) == self.engine_props['max_iters']:
+        if (iteration + 1) % self.engine_props['save_step'] == 0 or iteration == 0 or (iteration + 1) == \
+                self.engine_props['max_iters']:
             self.stats_obj.save_stats(base_fp=base_fp)
 
-        
         return resp
 
     def init_iter(self, iteration: int):

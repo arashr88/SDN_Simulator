@@ -164,14 +164,15 @@ class SDNController:
 
         self.sdn_props.is_sliced = False
 
-    def _handle_dynamic_slicing(self, path_list: list, path_index: int, forced_segments: int):
+    def _handle_dynamic_slicing(self, path_list: list, path_index: int,
+                                forced_segments: int):  # pylint: disable=unused-argument
         """
         Handles dynamic slicing for a network request.
         """
         remaining_bw = int(self.sdn_props.bandwidth)
         # TODO: Ignored?
-        path_len = find_path_len(path_list=path_list, topology=self.engine_props['topology'])
-        bw_mod_dict = sort_dict_keys(self.engine_props['mod_per_bw'])
+        path_len = find_path_len(path_list=path_list, topology=self.engine_props['topology'])  # pylint: disable=unused-variable
+        bw_mod_dict = sort_dict_keys(self.engine_props['mod_per_bw'])  # pylint: disable=unused-variable
 
         self.spectrum_obj.spectrum_props.path_list = path_list
         self.sdn_props.num_trans = 0
@@ -182,15 +183,15 @@ class SDNController:
 
             # TODO: Mod format list ignored?
             self.sdn_props.was_routed = True
-            mod_format, bw = self.spectrum_obj.get_spectrum_dynamic_slicing(
+            _, bandwidth = self.spectrum_obj.get_spectrum_dynamic_slicing(
                 mod_format_list=[], path_index=path_index
             )
 
             if self.spectrum_obj.spectrum_props.is_free:
                 self.allocate()
-                dedicated_bw = min(bw, remaining_bw)
+                dedicated_bw = min(bandwidth, remaining_bw)
                 self._update_req_stats(bandwidth=str(dedicated_bw))
-                remaining_bw -= bw
+                remaining_bw -= bandwidth
                 self.sdn_props.num_trans += 1
                 self.sdn_props.is_sliced = True
             else:
@@ -239,7 +240,8 @@ class SDNController:
         route_time = time.time() - start_time
 
         segment_slicing = False
-        while True:
+        # TODO: Improve SDN controller's structure
+        while True:  # pylint: disable=too-many-nested-blocks
             for path_index, path_list in enumerate(route_matrix):
                 if path_list is not False:
                     self.sdn_props.path_list = path_list

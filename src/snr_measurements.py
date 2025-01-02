@@ -335,7 +335,6 @@ class SnrMeasurements:
                 resp = 4
         return resp
 
-
     def check_snr_ext(self, path_index: int):
         """
         Checks the SNR on a single request using the external resources.
@@ -349,7 +348,8 @@ class SnrMeasurements:
         else:
             num_adjacent = self.find_num_adjacent_cores()
         loaded_data, loaded_data_gsnr = get_loaded_files(
-            num_adjacent, self.engine_props['cores_per_link'], self.snr_props.file_mapping_dict[self.engine_props['network']]
+            num_adjacent, self.engine_props['cores_per_link'],
+            self.snr_props.file_mapping_dict[self.engine_props['network']]
         )
 
         # Compute slot index
@@ -379,7 +379,8 @@ class SnrMeasurements:
         else:
             num_adjacent = self.find_num_adjacent_cores()
         loaded_data, loaded_data_gsnr = get_loaded_files(
-            num_adjacent, self.engine_props['cores_per_link'], self.snr_props.file_mapping_dict[self.engine_props['network']]
+            num_adjacent, self.engine_props['cores_per_link'],
+            self.snr_props.file_mapping_dict[self.engine_props['network']]
         )
 
         # Compute slot index
@@ -400,7 +401,7 @@ class SnrMeasurements:
         snr_val = loaded_data_gsnr[self.route_props.connection_index][slot_index][path_index]
 
         return mod_format, supported_bw, snr_val
-    
+
     def check_snr_ext_open_slots(self, path_index, open_slots_list):
         """
         Checks the SNR on a single request using the external resources for slicing.
@@ -413,10 +414,10 @@ class SnrMeasurements:
             num_adjacent = 0
         else:
             num_adjacent = self.find_num_adjacent_cores()
-        loaded_data, loaded_data_gsnr = get_loaded_files(
-            num_adjacent, self.engine_props['cores_per_link'], self.snr_props.file_mapping_dict[self.engine_props['network']]
+        loaded_data, _ = get_loaded_files(
+            num_adjacent, self.engine_props['cores_per_link'],
+            self.snr_props.file_mapping_dict[self.engine_props['network']]
         )
-
 
         # Retrieve modulation format and supported bandwidth
         for open_slot in open_slots_list[:]:
@@ -457,8 +458,8 @@ class SnrMeasurements:
         """
         self.num_slots = self.spectrum_props.end_slot - self.spectrum_props.start_slot + 1
         if self.engine_props['snr_type'] == "snr_e2e_external_resources":
-            mod_format, bw, snr_val = self.check_snr_ext_slicing(path_index)
+            mod_format, bandwidth, snr_val = self.check_snr_ext_slicing(path_index)
         else:
             raise NotImplementedError(f"Unexpected snr_type flag got: {self.engine_props['snr_type']}")
 
-        return mod_format, bw, snr_val
+        return mod_format, bandwidth, snr_val

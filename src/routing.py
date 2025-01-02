@@ -118,10 +118,11 @@ class Routing:
             path_len = find_path_len(path_list=path_list, topology=self.engine_props['topology'])
             chosen_bw = self.sdn_props.bandwidth
             if not self.engine_props['pre_calc_mod_selection']:
-                mod_formats_list = [get_path_mod(mods_dict=self.engine_props['mod_per_bw'][chosen_bw], path_len=path_len)]
+                mod_formats_list = [
+                    get_path_mod(mods_dict=self.engine_props['mod_per_bw'][chosen_bw], path_len=path_len)]
             else:
                 mod_formats_dict = sort_nested_dict_vals(original_dict=self.sdn_props.mod_formats_dict,
-                                                    nested_key='max_length')
+                                                         nested_key='max_length')
                 mod_formats_list = list(mod_formats_dict.keys())
             self.route_props.paths_matrix.append(path_list)
             self.route_props.mod_formats_matrix.append(mod_formats_list)
@@ -198,7 +199,7 @@ class Routing:
         else:
             raise ValueError(f"Missing precalculated path dataset for '{self.engine_props['network']}' topology")
         src_des_list = [int(self.sdn_props.source), int(self.sdn_props.destination)]
-        
+
         path_cnt = 0
         for pre_comp_matrix in loaded_data_dict:
             paths_calculated = 0
@@ -215,13 +216,12 @@ class Routing:
                     else:
                         temp_path = list(path[0][::-1])
 
-                    
                     temp_path = list(map(str, temp_path))
                     path_len = pre_comp_matrix[3][0][paths_calculated]
                     if path_len.dtype != np.float64:
                         path_len = path_len.astype(np.float64)
                     mod_formats_dict = sort_nested_dict_vals(original_dict=self.sdn_props.mod_formats_dict,
-                                                    nested_key='max_length')
+                                                             nested_key='max_length')
                     mod_formats_list = list(mod_formats_dict.keys())
                     self.route_props.paths_matrix.append(temp_path)
                     self.route_props.mod_formats_matrix.append(mod_formats_list[::-1])
@@ -231,10 +231,6 @@ class Routing:
                     paths_calculated += 1
                 break
             path_cnt += 1
-
-                
-
-
 
     def get_route(self):
         """
