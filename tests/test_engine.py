@@ -141,7 +141,7 @@ class TestEngine(unittest.TestCase):
         self.engine.engine_props['num_requests'] = 5000
         self.engine.engine_props['seeds'] = [42]
         self.engine.engine_props['topology_info']['nodes'] = {'A': {}, 'B': {}}  # Ensure nodes are a dictionary
-        self.engine.engine_props['is_only_core_node'] = False  # Define nodes permitted to send requests
+        self.engine.engine_props['is_only_core_node'] = True  # Define nodes permitted to send requests
 
         with patch('src.engine.load_model', autospec=True) as mock_load_model:
             self.engine.init_iter(iteration=iteration)
