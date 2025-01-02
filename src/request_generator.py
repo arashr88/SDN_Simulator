@@ -13,8 +13,10 @@ def get_requests(seed: int, engine_props: dict):
     requests_dict = {}
     current_time = 0
     request_id = 1
+    # Means ALL nodes are core nodes
     if engine_props['is_only_core_node']:
         nodes_list = list(engine_props['topology_info']['nodes'].keys())
+    # Means some nodes are nodes
     else:
         nodes_list = engine_props['core_nodes']
     set_seed(seed=seed)
