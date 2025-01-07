@@ -418,7 +418,8 @@ class SnrMeasurements:
             num_adjacent = self.find_num_adjacent_cores()
         loaded_data, _ = get_loaded_files(
             num_adjacent, self.engine_props['cores_per_link'],
-            self.snr_props.file_mapping_dict[self.engine_props['network']]
+            self.snr_props.file_mapping_dict,
+            self.engine_props['network']
         )
 
         # Retrieve modulation format and supported bandwidth

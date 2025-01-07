@@ -22,7 +22,7 @@ class TestSetupHelpers(unittest.TestCase):
             'cores_per_link': 7,
             'is_only_core_node': True,
             'mod_assumption': 'example_mod_a',
-            'mod_assumptions_path': 'json_input/run_mods/mod_formats.json'
+            'mod_assumption_path': None,
         }
         self.core_nodes = list()
         self.bw_info_dict = {'bandwidth': 100}
@@ -47,7 +47,7 @@ class TestSetupHelpers(unittest.TestCase):
 
         # Assertions
         mock_create_bw_info.assert_called_once_with(mod_assumption=self.engine_props['mod_assumption'],
-                                                    mod_assumptions_path=self.engine_props['mod_assumptions_path'])
+                                                    mod_assumptions_path=self.engine_props['mod_assumption_path'])
         mock_save_input.assert_called_once_with(
             base_fp=self.base_fp,
             properties=self.engine_props,
