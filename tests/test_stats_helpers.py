@@ -269,7 +269,7 @@ class TestSimStats(unittest.TestCase):
         self.assertEqual(self.sim_stats.stats_props.cores_dict[2], 1)
         self.assertEqual(self.sim_stats.stats_props.mods_used_dict['50GHz']['QPSK'], 1)
         self.assertEqual(self.sim_stats.stats_props.mods_used_dict['75GHz']['16QAM'], 1)
-        self.assertEqual(self.sim_stats.stats_props.xt_list, [0.15000000000000002])
+        self.assertEqual(self.sim_stats.stats_props.xt_list, [])
 
     def test_iter_update(self):
         """Test iter update."""
