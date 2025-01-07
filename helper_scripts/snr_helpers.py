@@ -1,13 +1,16 @@
+import os
+
 import numpy as np
 
 
-def get_loaded_files(core_num, cores_per_link, file_mapping):
+def get_loaded_files(core_num: int, cores_per_link: int, file_mapping_dict: dict, network: str):
     """
     Fetch the appropriate modulation format and GSNR files based on core_num and cores_per_link.
 
     :param core_num: The core number being used.
     :param cores_per_link: The total number of cores per link.
-    :param file_mapping: A dictionary mapping (core_num, cores_per_link) to file paths.
+    :param file_mapping_dict: A dictionary mapping (core_num, cores_per_link) to file paths.
+    :param network: The current network.
     :return: The loaded modulation format and GSNR data.
     :rtype: tuple
     """
@@ -16,10 +19,15 @@ def get_loaded_files(core_num, cores_per_link, file_mapping):
     else:
         key = (core_num, cores_per_link)
 
+    base_path = os.path.join('data', 'pre_calc', network)
+    file_mapping = file_mapping_dict[network]
+
     if key in file_mapping:
+        mf_path = os.path.join(base_path, 'modulations', file_mapping[key]['mf'])
+        gsnr_path = os.path.join(base_path, 'snr', file_mapping[key]['gsnr'])
         return (
-            np.load(file_mapping[key]['mf'], allow_pickle=True),
-            np.load(file_mapping[key]['gsnr'], allow_pickle=True),
+            np.load(mf_path, allow_pickle=True),
+            np.load(gsnr_path, allow_pickle=True),
         )
     raise ValueError(f"No matching file found for core_num={core_num}, cores_per_link={cores_per_link}")
 
@@ -56,8 +64,8 @@ def compute_response(mod_format, snr_props, spectrum_props, sdn_props):
     :rtype: bool
     """
     is_valid_modulation = (
-                snr_props.mod_format_mapping_dict[mod_format] == spectrum_props.modulation
-        )
+            snr_props.mod_format_mapping_dict[mod_format] == spectrum_props.modulation
+    )
     meets_bw_requirements = (
             snr_props.bw_mapping_dict[spectrum_props.modulation] >= int(sdn_props.bandwidth)
     )
