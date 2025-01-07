@@ -105,8 +105,11 @@ def read_config(args_dict: dict, config_path: str = None):
 
                 # TODO: Only support for changing all s<values> as of now
                 # if cmdline argument was provided, prioritize that
-                if args_dict[option] is not None:
-                    config_dict['s1'][option] = args_dict[option]
+                try:
+                    if args_dict[option] is not None:
+                        config_dict['s1'][option] = args_dict[option]
+                except:
+                    print('line 112 setup config.')
 
         # Init other options to None if they haven't been specified
         for category, options_dict in other_dict.items():

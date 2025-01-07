@@ -16,7 +16,7 @@ def create_input(base_fp: str, engine_props: dict):
     """
     bw_info_dict = create_bw_info(
         mod_assumption=engine_props['mod_assumption'],
-        mod_assumptions_path=engine_props['mod_assumptions_path']
+        mod_assumptions_path=engine_props['mod_assumption_path']
     )
     bw_file = f"bw_info_{engine_props['thread_num']}.json"
     save_input(base_fp=base_fp, properties=engine_props, file_name=bw_file, data_dict=bw_info_dict)

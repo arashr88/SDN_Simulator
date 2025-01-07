@@ -14,7 +14,8 @@ def str_to_bool(string: str):
 
 SIM_REQUIRED_OPTIONS = {
     'general_settings': {
-        'sim_type': str,
+        'mod_assumption': str,
+        'mod_assumption_path': str,
         'holding_time': float,
         'erlangs': ast.literal_eval,
         'thread_erlangs': str_to_bool,
@@ -128,6 +129,8 @@ OTHER_OPTIONS = {
 }
 
 COMMAND_LINE_PARAMS = [
+    ['mod_assumption', str, ''],
+    ['mod_assumption_path', str, ''],
     ['epsilon_start', float, ''],
     ['epsilon_end', float, ''],
     ['learn_rate', float, ''],
