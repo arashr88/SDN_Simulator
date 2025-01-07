@@ -51,12 +51,12 @@ def create_bw_info(mod_assumption: str, mod_assumptions_path: str = None):
     :return: The number of spectral slots needed for each bandwidth and modulation format pair.
     :rtype: dict
     """
-    base_fp = os.path.join('data', 'json_input', 'run_mods')
     if mod_assumptions_path is None:
+        base_fp = os.path.join('data', 'json_input', 'run_mods')
         mod_assumptions_path = os.path.join(base_fp, 'mod_formats.json')
 
     try:
-        mod_assumptions_path = os.path.join(base_fp, mod_assumptions_path)
+        mod_assumptions_path = os.path.join(mod_assumptions_path)
         with open(mod_assumptions_path, 'r', encoding='utf-8') as mod_assumptions_fp:
             mod_formats_obj = json.load(mod_assumptions_fp)
 
