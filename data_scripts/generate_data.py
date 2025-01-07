@@ -1,7 +1,6 @@
 import math
 import json
 import os
-import sys
 
 
 def create_pt(cores_per_link: int, net_spec_dict: dict):
@@ -39,7 +38,6 @@ def create_pt(cores_per_link: int, net_spec_dict: dict):
             'span_length': 100,
         }
         topology_dict['links'][link_num] = link_props_dict
-
     return topology_dict
 
 
@@ -52,22 +50,20 @@ def create_bw_info(mod_assumption: str, mod_assumptions_path: str = None):
     :return: The number of spectral slots needed for each bandwidth and modulation format pair.
     :rtype: dict
     """
-    if mod_assumptions_path is None:
-        mod_assumptions_path = os.path.join('json_input', 'run_mods', 'mod_formats.json')
+    if mod_assumptions_path is None or mod_assumptions_path == 'None':
+        base_fp = os.path.join('data', 'json_input', 'run_mods')
+        mod_assumptions_path = os.path.join(base_fp, 'mod_formats.json')
 
     try:
+        mod_assumptions_path = os.path.join(mod_assumptions_path)
         with open(mod_assumptions_path, 'r', encoding='utf-8') as mod_assumptions_fp:
             mod_formats_obj = json.load(mod_assumptions_fp)
 
         if mod_assumption in mod_formats_obj.keys():
             return mod_formats_obj[mod_assumption]
     except json.JSONDecodeError as json_decode_error:
-        print(f"Bad document: {json_decode_error.doc}")
-        print("Ensure file is a valid JSON document then try again")
-        sys.exit(1)
+        raise FileExistsError(f"Could not parse: {json_decode_error.doc}")  # pylint: disable=raise-missing-from
     except FileNotFoundError as file_not_found:
-        print(f"{file_not_found.strerror}: {file_not_found.filename}")
-        print("Please ensure file exists then try again")
-        sys.exit(1)
+        raise FileNotFoundError(f"Could not find: {file_not_found.strerror}: {file_not_found.filename}") # pylint: disable=raise-missing-from
 
     raise NotImplementedError(f"Unknown modulation assumption '{mod_assumption}'")

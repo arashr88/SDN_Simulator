@@ -15,27 +15,34 @@ def str_to_bool(string: str):
 SIM_REQUIRED_OPTIONS = {
     'general_settings': {
         'mod_assumption': str,
-        'mod_assumptions_path': str,
+        'mod_assumption_path': str,
         'holding_time': float,
         'erlangs': ast.literal_eval,
         'thread_erlangs': str_to_bool,
+        'guard_slots': int,
         'num_requests': int,
         'request_distribution': ast.literal_eval,
-        'guard_slots': int,
         'max_iters': int,
         'max_segments': int,
         'dynamic_lps': str_to_bool,
-        'allocation_method': str,
         'route_method': str,
-        'print_step': int,
+        'allocation_method': str,
         'save_snapshots': str_to_bool,
         'snapshot_step': int,
+        'print_step': int,
+        'fixed_grid': str_to_bool,
+        'pre_calc_mod_selection': str_to_bool,
+        'spectrum_priority': str,
+        'save_step': int,
+        'save_start_end_slots': str_to_bool,
     },
     'topology_settings': {
         'network': str,
         'bw_per_slot': float,
         'cores_per_link': int,
         'const_link_weight': str_to_bool,
+        'is_only_core_node': str_to_bool,
+        'multi_fiber': str_to_bool,
     },
     'spectrum_settings': {
         'c_band': int,
@@ -52,8 +59,8 @@ SIM_REQUIRED_OPTIONS = {
         'input_power': float,
     },
     'file_settings': {
-        'file_type': str
-    }
+        'file_type': str,
+    },
 }
 
 OTHER_OPTIONS = {
@@ -122,6 +129,8 @@ OTHER_OPTIONS = {
 }
 
 COMMAND_LINE_PARAMS = [
+    ['mod_assumption', str, ''],
+    ['mod_assumption_path', str, ''],
     ['epsilon_start', float, ''],
     ['epsilon_end', float, ''],
     ['learn_rate', float, ''],
@@ -189,8 +198,13 @@ COMMAND_LINE_PARAMS = [
     ['decay_factor', float, ''],
     ['dynamic_reward', bool, ''],
     ['config_path', str, ''],
-    ['mod_assumption', str, ''],
-    ['mod_assumptions_path', str, ''],
+    ['fixed_grid', bool, ''],
+    ['pre_calc_mod_selection', bool, ''],
+    ['is_only_core_node', bool, ''],
+    ['multi_fiber', bool, ''],
+    ['spectrum_priority', str, ''],
+    ['save_step', int, ''],
+    ['save_start_end_slots', bool, ''],
 
     # StableBaselines3 arguments
     ['algo', str, ''],

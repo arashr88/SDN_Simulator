@@ -20,9 +20,11 @@ class TestSetupHelpers(unittest.TestCase):
             'sim_start': '00:00',
             'const_link_weight': 10,
             'cores_per_link': 7,
+            'is_only_core_node': True,
             'mod_assumption': 'example_mod_a',
-            'mod_assumptions_path': 'json_input/run_mods/mod_formats.json'
+            'mod_assumption_path': None,
         }
+        self.core_nodes = list()
         self.bw_info_dict = {'bandwidth': 100}
         self.network_dict = {'nodes': [], 'links': []}
         self.pt_info = {'cores': 7, 'specifications': {}}
@@ -37,7 +39,7 @@ class TestSetupHelpers(unittest.TestCase):
         """ Tests create input. """
         # Setup mock return values
         mock_create_bw_info.return_value = self.bw_info_dict
-        mock_create_network.return_value = self.network_dict
+        mock_create_network.return_value = self.network_dict, self.core_nodes
         mock_create_pt.return_value = self.pt_info
 
         # Call the function
@@ -45,7 +47,7 @@ class TestSetupHelpers(unittest.TestCase):
 
         # Assertions
         mock_create_bw_info.assert_called_once_with(mod_assumption=self.engine_props['mod_assumption'],
-                                                    mod_assumptions_path=self.engine_props['mod_assumptions_path'])
+                                                    mod_assumptions_path=self.engine_props['mod_assumption_path'])
         mock_save_input.assert_called_once_with(
             base_fp=self.base_fp,
             properties=self.engine_props,
@@ -55,7 +57,8 @@ class TestSetupHelpers(unittest.TestCase):
         mock_create_network.assert_called_once_with(
             base_fp=self.base_fp,
             const_weight=self.engine_props['const_link_weight'],
-            net_name=self.engine_props['network']
+            net_name=self.engine_props['network'],
+            is_only_core_node=True,
         )
         mock_create_pt.assert_called_once_with(
             cores_per_link=self.engine_props['cores_per_link'],
