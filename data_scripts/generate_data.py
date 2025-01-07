@@ -1,7 +1,6 @@
 import math
 import json
 import os
-import sys
 
 
 def create_pt(cores_per_link: int, net_spec_dict: dict):
@@ -63,8 +62,8 @@ def create_bw_info(mod_assumption: str, mod_assumptions_path: str = None):
         if mod_assumption in mod_formats_obj.keys():
             return mod_formats_obj[mod_assumption]
     except json.JSONDecodeError as json_decode_error:
-        raise FileExistsError(f"Could not parse: {json_decode_error.doc}")
+        raise FileExistsError(f"Could not parse: {json_decode_error.doc}")  # pylint: disable=raise-missing-from
     except FileNotFoundError as file_not_found:
-        raise FileNotFoundError(f"Could not find: {file_not_found.strerror}: {file_not_found.filename}")
+        raise FileNotFoundError(f"Could not find: {file_not_found.strerror}: {file_not_found.filename}") # pylint: disable=raise-missing-from
 
     raise NotImplementedError(f"Unknown modulation assumption '{mod_assumption}'")
