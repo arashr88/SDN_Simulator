@@ -10,7 +10,6 @@ class TestSetupHelpers(unittest.TestCase):
     Tests the setup_helpers.py script.
     """
 
-    # TODO: Test when core node is false
     def setUp(self):
         self.base_fp = '/fake/base/path'
         self.engine_props = {
@@ -22,6 +21,8 @@ class TestSetupHelpers(unittest.TestCase):
             'const_link_weight': 10,
             'cores_per_link': 7,
             'is_only_core_node': True,
+            'mod_assumption': 'example_mod_a',
+            'mod_assumptions_path': 'json_input/run_mods/mod_formats.json'
         }
         self.core_nodes = list()
         self.bw_info_dict = {'bandwidth': 100}
@@ -45,7 +46,8 @@ class TestSetupHelpers(unittest.TestCase):
         result = create_input(self.base_fp, self.engine_props)
 
         # Assertions
-        mock_create_bw_info.assert_called_once_with(sim_type=self.engine_props['sim_type'])
+        mock_create_bw_info.assert_called_once_with(mod_assumption=self.engine_props['mod_assumption'],
+                                                    mod_assumptions_path=self.engine_props['mod_assumptions_path'])
         mock_save_input.assert_called_once_with(
             base_fp=self.base_fp,
             properties=self.engine_props,

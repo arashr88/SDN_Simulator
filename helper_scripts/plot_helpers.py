@@ -5,7 +5,7 @@ from statistics import mean
 import numpy as np
 
 from helper_scripts.sim_helpers import dict_to_list, list_to_title
-from arg_scripts.plot_args import PlotArgs
+from arg_scripts.plot_args import PlotArgs, PlotProps
 
 
 class PlotHelpers:  # pylint: disable=too-few-public-methods
@@ -13,7 +13,7 @@ class PlotHelpers:  # pylint: disable=too-few-public-methods
     A class to assist with various tasks related when plotting statistics.
     """
 
-    def __init__(self, plot_props: object, net_names_list: list):
+    def __init__(self, plot_props: PlotProps, net_names_list: list):
         self.plot_props = plot_props
 
         self.plot_props.title_names = list_to_title(input_list=net_names_list)
@@ -47,11 +47,11 @@ class PlotHelpers:  # pylint: disable=too-few-public-methods
         cong_list = dict_to_list(self.erlang_dict['iter_stats'], 'congestion', ['block_reasons_dict'])
         dist_list = dict_to_list(self.erlang_dict['iter_stats'], 'distance', ['block_reasons_dict'])
 
-        average_length = np.nanmean(lengths_list) if lengths_list.size > 0 else 0
-        average_hop = np.nanmean(hops_list) if hops_list.size > 0 else 0
-        average_time = np.nanmean(times_list) if times_list.size > 0 else 0
-        average_cong = np.nanmean(cong_list) if cong_list.size > 0 else 0
-        average_dist = np.nanmean(dist_list) if dist_list.size > 0 else 0
+        average_length = np.nanmean(lengths_list) if len(lengths_list) > 0 else 0
+        average_hop = np.nanmean(hops_list) if len(hops_list) > 0 else 0
+        average_time = np.nanmean(times_list) if len(times_list) > 0 else 0
+        average_cong = np.nanmean(cong_list) if len(cong_list) > 0 else 0
+        average_dist = np.nanmean(dist_list) if len(dist_list) > 0 else 0
 
         self.plot_props.plot_dict[self.time][self.sim_num].lengths_list.append(average_length)
         self.plot_props.plot_dict[self.time][self.sim_num].hops_list.append(average_hop)
@@ -100,7 +100,7 @@ class PlotHelpers:  # pylint: disable=too-few-public-methods
                 modulations_dict[bandwidth].setdefault(modulation, []).append(mean(mod_usages))
 
     def _find_sim_info(self, input_dict: dict):
-        info_item_list = ['holding_time', 'cores_per_link', 'spectral_slots', 'network', 'num_requests',
+        info_item_list = ['holding_time', 'cores_per_link', 'c_band', 'network', 'num_requests',
                           'cores_per_link', 'max_segments']
         self.plot_props = self.plot_props.plot_dict[self.time][self.sim_num].update_info_dict(
             plot_props=self.plot_props,
