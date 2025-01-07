@@ -58,8 +58,7 @@ class SDNController:
         band = self.spectrum_obj.spectrum_props.curr_band
 
         if self.engine_props['guard_slots'] != 0:
-            if self.spectrum_obj.spectrum_props.slots_needed != 1:
-                end_slot = end_slot - 1
+            end_slot = end_slot - 1
         else:
             end_slot += 1
 
@@ -235,7 +234,7 @@ class SDNController:
             route_matrix = force_route_matrix
             # TODO: This is an inconsistency
             self.route_obj.route_props.mod_formats_matrix = [force_mod_format]
-            # TODO: This must be fixed
+            # fixme
             self.route_obj.route_props.weights_list = [0]
         route_time = time.time() - start_time
 
