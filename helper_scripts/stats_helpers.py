@@ -209,7 +209,9 @@ class SimStats:
             # TODO: Eventually change this name (sdn_data)
             curr_sdn_data = sdn_data.get_data(key=stat_key)
             if stat_key == 'xt_list':
-                self.stats_props.xt_list.append(mean(curr_sdn_data))
+                # fixme
+                if curr_sdn_data == [None]:
+                    break
             for i, data in enumerate(curr_sdn_data):
                 if stat_key == 'core_list':
                     self.stats_props.cores_dict[data] += 1
