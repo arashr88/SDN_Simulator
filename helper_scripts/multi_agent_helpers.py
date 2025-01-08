@@ -97,8 +97,7 @@ class HyperparamConfig:  # pylint: disable=too-few-public-methods
             print('Did not update epsilon due to the length of the reward list.')
             return
 
-        curr_reward = self.reward_list[0]
-        last_reward = self.reward_list[1]
+        curr_reward, last_reward = self.reward_list
         reward_diff = abs(curr_reward - last_reward)
         self.curr_epsilon = self.epsilon_start * (1 / (1 + reward_diff))
 
@@ -110,8 +109,7 @@ class HyperparamConfig:  # pylint: disable=too-few-public-methods
             print('Did not update alpha due to the length of the reward list.')
             return
 
-        curr_reward = self.reward_list[0]
-        last_reward = self.reward_list[1]
+        curr_reward, last_reward = self.reward_list
         reward_diff = abs(curr_reward - last_reward)
         self.curr_alpha = self.alpha_start * (1 / (1 + reward_diff))
 
