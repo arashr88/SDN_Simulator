@@ -1,7 +1,6 @@
 import ast
 
 
-# TODO: Create a test to ensure command line and config options are both the same
 def str_to_bool(string: str):
     """
     Convert any giving string to a boolean.
@@ -133,6 +132,7 @@ OTHER_OPTIONS = {
 
 COMMAND_LINE_PARAMS = [
     ['mod_assumption', str, ''],
+    ['n_trials', str, ''],
     ['mod_assumption_path', str, ''],
     ['epsilon_start', float, ''],
     ['epsilon_end', float, ''],
