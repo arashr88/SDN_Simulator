@@ -58,6 +58,8 @@ class TestPathAgent(unittest.TestCase):
         self.path_agent.agent_obj = MagicMock()
         self.path_agent.hyperparam_obj = MagicMock()
         self.path_agent.hyperparam_obj.curr_reward = 1.0
+        self.path_agent.hyperparam_obj.iteration = 5
+        self.path_agent.reward_penalty_list = [0] * self.engine_props['max_iters']
         self.path_agent.update(was_allocated=True, net_spec_dict={}, iteration=1, path_length=5)
         self.path_agent.agent_obj.update_routes_matrix.assert_called_once()
 
@@ -69,6 +71,8 @@ class TestPathAgent(unittest.TestCase):
         self.path_agent.agent_obj = MagicMock()
         self.path_agent.hyperparam_obj = MagicMock()
         self.path_agent.hyperparam_obj.curr_reward = 1.0
+        self.path_agent.hyperparam_obj.iteration = 0
+        self.path_agent.reward_penalty_list = [0] * self.engine_props['max_iters']
         self.path_agent.update(was_allocated=True, net_spec_dict={}, iteration=1, path_length=5)
         self.path_agent.agent_obj.update.assert_called_once()
 
@@ -138,9 +142,12 @@ class TestCoreAgent(unittest.TestCase):
     def test_end_iter_q_learning(self):
         """
         Test end_iter method when core_algorithm is 'q_learning'.
+        Expect NotImplementedError since the method is not implemented yet.
         """
         self.core_agent.agent_obj = MagicMock()
-        self.core_agent.end_iter()
+
+        with self.assertRaises(NotImplementedError):
+            self.core_agent.end_iter()
 
     def test_setup_env_q_learning(self):
         """
@@ -291,7 +298,7 @@ class TestHyperParamConfig(unittest.TestCase):
 
         self.config_obj.time_step = 0
         self.config_obj.state_action_pair = ('state1', 'action1')
-        self.config_obj.counts = {('state1', 'action1'): 10}
+        self.config_obj.counts = {('state1', 'action1'): [10, 0, 1]}
         self.config_obj.reward_list = [15.0, 10.0]
         self.config_obj.values = {'state1': 9, 'state2': 3}
 
@@ -302,6 +309,7 @@ class TestHyperParamConfig(unittest.TestCase):
         """
         Tests the update epsilon strategy.
         """
+        self.config_obj.action_index = 2
         for strategy in self.config_obj.epsilon_strategies:
             self.config_obj.epsilon_strategy = strategy
             if strategy == 'softmax':
@@ -315,6 +323,7 @@ class TestHyperParamConfig(unittest.TestCase):
         """
         Tests the update alpha strategy.
         """
+        self.config_obj.action_index = 0
         for strategy in self.config_obj.alpha_strategies:
             self.config_obj.alpha_strategy = strategy
             if strategy == 'softmax':
@@ -377,7 +386,8 @@ class TestHyperParamConfig(unittest.TestCase):
         Test the state-based epsilon update rule.
         """
         # Plus one since this is incremented in this function
-        num_visits = self.config_obj.counts[self.config_obj.state_action_pair] + 1
+        self.config_obj.action_index = 1
+        num_visits = self.config_obj.counts[self.config_obj.state_action_pair][self.config_obj.action_index] + 1
         expected_epsilon = self.config_obj.epsilon_start / (1 + num_visits)
         self.config_obj._state_based_eps()
         self.assertAlmostEqual(self.config_obj.curr_epsilon, expected_epsilon, places=5)
@@ -386,8 +396,9 @@ class TestHyperParamConfig(unittest.TestCase):
         """
         Test the state-based alpha update rule.
         """
+        self.config_obj.action_index = 0
         # Plus one since this is incremented in this function
-        num_visits = self.config_obj.counts[self.config_obj.state_action_pair] + 1
+        num_visits = self.config_obj.counts[self.config_obj.state_action_pair][self.config_obj.action_index] + 1
         expected_alpha = 1 / (1 + num_visits)
         self.config_obj._state_based_alpha()
         self.assertAlmostEqual(self.config_obj.curr_alpha, expected_alpha, places=5)

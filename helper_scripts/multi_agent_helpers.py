@@ -10,7 +10,6 @@ from .bandit_helpers import UCBBandit, get_q_table
 EPISODIC_STRATEGIES = ['exp_decay', 'linear_decay']
 
 
-# TODO: Update UML class
 class HyperparamConfig:  # pylint: disable=too-few-public-methods
     """
     Controls all hyperparameter starts, ends, and episodic and or time step modifications.
@@ -239,7 +238,6 @@ class PathAgent:
         """
         Sets up the environment for the path agent.
         """
-        # TODO: Test reward penalty list
         self.reward_penalty_list = np.zeros(self.engine_props['max_iters'])
         self.hyperparam_obj = HyperparamConfig(engine_props=self.engine_props, rl_props=self.rl_props, is_path=True)
         if self.path_algorithm == 'q_learning':
