@@ -13,43 +13,10 @@ def str_to_bool(string: str):
     return string.lower() in ['true', 'yes', '1']
 
 
-YUE_REQUIRED_OPTIONS = {
+SIM_REQUIRED_OPTIONS = {
     'general_settings': {
-        'sim_type': str,
-        'holding_time': float,
-        'arrival_start': float,
-        'arrival_stop': float,
-        'arrival_step': float,
-        'thread_erlangs': str_to_bool,
-        'guard_slots': int,
-        'num_requests': int,
-        'request_distribution': ast.literal_eval,
-        'max_iters': int,
-        'max_segments': int,
-        'dynamic_lps': str_to_bool,
-        'allocation_method': str,
-        'route_method': str,
-        'save_snapshots': str_to_bool,
-        'snapshot_step': int,
-        'print_step': int,
-    },
-    'topology_settings': {
-        'network': str,
-        'bw_per_slot': float,
-        'cores_per_link': int,
-        'const_link_weight': str_to_bool,
-    },
-    'spectrum_settings': {
-        'c_band': int,
-    },
-    'file_settings': {
-        'file_type': str,
-    },
-}
-
-ARASH_REQUIRED_OPTIONS = {
-    'general_settings': {
-        'sim_type': str,
+        'mod_assumption': str,
+        'mod_assumption_path': str,
         'holding_time': float,
         'erlangs': ast.literal_eval,
         'thread_erlangs': str_to_bool,
@@ -64,12 +31,19 @@ ARASH_REQUIRED_OPTIONS = {
         'save_snapshots': str_to_bool,
         'snapshot_step': int,
         'print_step': int,
+        'fixed_grid': str_to_bool,
+        'pre_calc_mod_selection': str_to_bool,
+        'spectrum_priority': str,
+        'save_step': int,
+        'save_start_end_slots': str_to_bool,
     },
     'topology_settings': {
         'network': str,
         'bw_per_slot': float,
         'cores_per_link': int,
         'const_link_weight': str_to_bool,
+        'is_only_core_node': str_to_bool,
+        'multi_fiber': str_to_bool,
     },
     'spectrum_settings': {
         'c_band': int,
@@ -158,6 +132,8 @@ OTHER_OPTIONS = {
 }
 
 COMMAND_LINE_PARAMS = [
+    ['mod_assumption', str, ''],
+    ['mod_assumption_path', str, ''],
     ['epsilon_start', float, ''],
     ['epsilon_end', float, ''],
     ['learn_rate', float, ''],
@@ -174,7 +150,6 @@ COMMAND_LINE_PARAMS = [
     ['xt_noise', bool, ''],
     ['requested_xt', dict, ''],
     ['k_paths', int, ''],
-    ['sim_type', str, ''],
     ['network', str, ''],
     ['holding_time', float, ''],
     ['erlangs', dict, ''],
@@ -195,10 +170,8 @@ COMMAND_LINE_PARAMS = [
     ['allocation_method', str, ''],
     ['route_method', str, ''],
     ['request_distribution', dict, ''],
-    ['arrival_start', float, ''],
-    ['arrival_stop', float, ''],
-    ['arrival_step', float, ''],
-    ['save_snapshots', float, ''],
+    ['arrival_rate', dict, ''],
+    ['save_snapshots', bool, ''],
     ['xt_type', str, ''],
     ['snapshot_step', int, ''],
     ['print_step', int, ''],
@@ -234,6 +207,13 @@ COMMAND_LINE_PARAMS = [
     ['alpha_end', float, ''],
     ['epsilon_update', str, ''],
     ['decay_rate', float, ''],
+    ['fixed_grid', bool, ''],
+    ['pre_calc_mod_selection', bool, ''],
+    ['is_only_core_node', bool, ''],
+    ['multi_fiber', bool, ''],
+    ['spectrum_priority', str, ''],
+    ['save_step', int, ''],
+    ['save_start_end_slots', bool, ''],
 
     # StableBaselines3 arguments
     ['algo', str, ''],

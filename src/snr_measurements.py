@@ -4,6 +4,7 @@ import numpy as np
 import networkx as nx
 
 from arg_scripts.snr_args import SNRProps
+from helper_scripts.snr_helpers import get_slot_index, get_loaded_files, compute_response
 
 
 # fixme: Only works for seven cores
@@ -12,11 +13,12 @@ class SnrMeasurements:
     Handles signal-to-noise ratio calculations for a given request.
     """
 
-    def __init__(self, engine_props: dict, sdn_props: object, spectrum_props: object):
+    def __init__(self, engine_props: dict, sdn_props: object, spectrum_props: object, route_props: object):
         self.snr_props = SNRProps()
         self.engine_props = engine_props
         self.sdn_props = sdn_props
         self.spectrum_props = spectrum_props
+        self.route_props = route_props
 
         self.channels_list = None
         self.link_id = None
@@ -220,7 +222,7 @@ class SnrMeasurements:
         total_snr = 10 * math.log10(1 / total_snr)
 
         resp = total_snr > self.snr_props.req_snr
-        return resp
+        return resp, p_xt
 
     def check_adjacent_cores(self, link_tuple: tuple):
         """
@@ -306,7 +308,132 @@ class SnrMeasurements:
 
         return resp, cross_talk
 
-    def handle_snr(self):
+    def find_num_adjacent_cores(self):
+        """
+        Finds the number of adjacent cores for selected core.
+
+        :return: The number of adjacent cores.
+        """
+        resp = 0
+        if self.engine_props['cores_per_link'] == 4:
+            resp = 2
+        elif self.engine_props['cores_per_link'] == 7:
+            resp = 6 if self.spectrum_props.core_num == 6 else 3
+        elif self.engine_props['cores_per_link'] == 13:
+            if self.spectrum_props.core_num < 6:
+                resp = 2
+            elif 6 <= self.spectrum_props.core_num < 12:
+                resp = 5
+            elif self.spectrum_props.core_num == 12:
+                resp = 6
+        elif self.engine_props['cores_per_link'] == 19:
+            if self.spectrum_props.core_num >= 12:
+                resp = 6
+            elif self.spectrum_props.core_num % 2 == 0:
+                resp = 3
+            else:
+                resp = 4
+        return resp
+
+    def check_snr_ext(self, path_index: int):
+        """
+        Checks the SNR on a single request using the external resources.
+
+        :return: Whether the SNR threshold can be met and SNR value.
+        :rtype: tuple
+        """
+        # Fetch loaded files
+        if self.engine_props['multi_fiber']:
+            num_adjacent = 0
+        else:
+            num_adjacent = self.find_num_adjacent_cores()
+        loaded_data, loaded_data_gsnr = get_loaded_files(
+            num_adjacent, self.engine_props['cores_per_link'],
+            self.snr_props.file_mapping_dict,
+            network=self.engine_props['network'],
+        )
+
+        # Compute slot index
+        slot_index = get_slot_index(
+            self.spectrum_props.curr_band, self.spectrum_props.start_slot, self.engine_props
+        )
+
+        # Fetch modulation format and SNR value
+        mod_format = loaded_data[self.route_props.connection_index][slot_index][path_index]
+        snr_val = loaded_data_gsnr[self.route_props.connection_index][slot_index][path_index]
+
+        # Determine response
+        resp = compute_response(mod_format, self.snr_props, self.spectrum_props, self.sdn_props)
+
+        return resp, snr_val
+
+    def check_snr_ext_slicing(self, path_index):
+        """
+        Checks the SNR on a single request using the external resources for slicing.
+
+        :return: Modulation format, supported bandwidth, and SNR value.
+        :rtype: tuple
+        """
+        # Fetch loaded files
+        if self.engine_props['multi_fiber']:
+            num_adjacent = 0
+        else:
+            num_adjacent = self.find_num_adjacent_cores()
+        loaded_data, loaded_data_gsnr = get_loaded_files(
+            num_adjacent, self.engine_props['cores_per_link'],
+            self.snr_props.file_mapping_dict,
+            network=self.engine_props['network']
+        )
+
+        # Compute slot index
+        slot_index = get_slot_index(
+            self.spectrum_props.curr_band, self.spectrum_props.start_slot, self.engine_props
+        )
+
+        # Retrieve modulation format and supported bandwidth
+        mod_format_key = loaded_data[self.route_props.connection_index][slot_index][path_index]
+        if mod_format_key == 0:
+            mod_format = None
+            supported_bw = 0
+        else:
+            mod_format = self.snr_props.mod_format_mapping_dict[mod_format_key]
+            supported_bw = self.snr_props.bw_mapping_dict[mod_format]
+
+        # Retrieve SNR value
+        snr_val = loaded_data_gsnr[self.route_props.connection_index][slot_index][path_index]
+
+        return mod_format, supported_bw, snr_val
+
+    def check_snr_ext_open_slots(self, path_index, open_slots_list):
+        """
+        Checks the SNR on a single request using the external resources for slicing.
+
+        :return: Modulation format, supported bandwidth, and SNR value.
+        :rtype: tuple
+        """
+        # Fetch loaded files
+        if self.engine_props['multi_fiber']:
+            num_adjacent = 0
+        else:
+            num_adjacent = self.find_num_adjacent_cores()
+        loaded_data, _ = get_loaded_files(
+            num_adjacent, self.engine_props['cores_per_link'],
+            self.snr_props.file_mapping_dict,
+            self.engine_props['network']
+        )
+
+        # Retrieve modulation format and supported bandwidth
+        for open_slot in open_slots_list[:]:
+            slot_index = get_slot_index(
+                self.spectrum_props.curr_band, open_slot, self.engine_props
+            )
+            mod_format_key = loaded_data[self.route_props.connection_index][slot_index][path_index]
+            if mod_format_key == 0:
+                open_slots_list.remove(open_slot)
+
+        return open_slots_list
+
+    def handle_snr(self, path_index):
         """
         Controls the methods of this class.
 
@@ -318,7 +445,24 @@ class SnrMeasurements:
             snr_check, xt_cost = self.check_snr()
         elif self.engine_props['snr_type'] == "xt_calculation":
             snr_check, xt_cost = self.check_xt()
+        elif self.engine_props['snr_type'] == "snr_e2e_external_resources":
+            snr_check, xt_cost = self.check_snr_ext(path_index)
         else:
             raise NotImplementedError(f"Unexpected snr_type flag got: {self.engine_props['snr_type']}")
 
         return snr_check, xt_cost
+
+    def handle_snr_dynamic_slicing(self, path_index):
+        """
+        Controls the methods of this class.
+
+        :return: Whether snr is acceptable for allocation or not for a given request and its cost
+        :rtype: tuple
+        """
+        self.num_slots = self.spectrum_props.end_slot - self.spectrum_props.start_slot + 1
+        if self.engine_props['snr_type'] == "snr_e2e_external_resources":
+            mod_format, bandwidth, snr_val = self.check_snr_ext_slicing(path_index)
+        else:
+            raise NotImplementedError(f"Unexpected snr_type flag got: {self.engine_props['snr_type']}")
+
+        return mod_format, bandwidth, snr_val
