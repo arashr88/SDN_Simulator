@@ -66,7 +66,6 @@ class SDNProps:
         self.start_slot_list = list()
         self.end_slot_list = list()
 
-    # TODO: Update standards and guidelines, this should be a standardized function name.
     def get_data(self, key: str):
         """
         Retrieve a property of the object.

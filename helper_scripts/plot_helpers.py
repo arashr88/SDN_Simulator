@@ -24,9 +24,10 @@ class PlotHelpers:  # pylint: disable=too-few-public-methods
         self.sim_num = None
         self.data_dict = None
 
-    # TODO: Skipping function for new plot args, since this needs to be updated and only works for q_learning
+    # TODO: This function is only partially functional for q-learning
     def _find_ai_stats(self, cores_per_link: int):
-        # TODO: Generalize, also make sure to save date of simulation!
+        # TODO: Generalize
+        # TODO: Save the date of a simulation
         ai_fp = os.path.join('..', 'logs', 'ql', self.data_dict['network'], self.data_dict['date'], self.time)
         ai_fp = os.path.join(ai_fp, f"e{self.erlang}_params_c{cores_per_link}.json")
 
@@ -100,6 +101,7 @@ class PlotHelpers:  # pylint: disable=too-few-public-methods
                 modulations_dict[bandwidth].setdefault(modulation, []).append(mean(mod_usages))
 
     def _find_sim_info(self, input_dict: dict):
+        # TODO: Does not support all bands/slots
         info_item_list = ['holding_time', 'cores_per_link', 'c_band', 'network', 'num_requests',
                           'cores_per_link', 'max_segments']
         self.plot_props = self.plot_props.plot_dict[self.time][self.sim_num].update_info_dict(
@@ -120,7 +122,11 @@ class PlotHelpers:  # pylint: disable=too-few-public-methods
     @staticmethod
     def _read_json_file(file_path: str):
         with open(file_path, 'r', encoding='utf-8') as file_obj:
-            return json.load(file_obj)
+            try:
+                return json.load(file_obj)
+            except json.JSONDecodeError:
+                print('JSON file did not finishing writing, skipping!')
+                return None
 
     def _read_input_output(self):
         base_fp = os.path.join(self.data_dict['network'], self.data_dict['date'], self.time)
@@ -144,6 +150,10 @@ class PlotHelpers:  # pylint: disable=too-few-public-methods
                 for erlang in erlang_list:
                     self.erlang = erlang
                     input_dict, self.erlang_dict = self._read_input_output()
+
+                    if input_dict is None or self.erlang_dict is None:
+                        continue
+
                     self.plot_props.plot_dict[time][sim_num].erlang_list.append(float(erlang))
 
                     self.plot_props.erlang_dict = self.erlang_dict
@@ -160,10 +170,6 @@ class PlotHelpers:  # pylint: disable=too-few-public-methods
                     self._find_mod_info()
                     self._find_snapshot_usage()
                     self._find_misc_stats()
-                    # TODO: Commented out
-                    if input_dict['path_algorithm'] is not None and input_dict['path_algorithm'] != 'None':
-                        pass
-                        # self._find_ai_stats(cores_per_link=input_dict['cores_per_link'])
 
     def get_file_info(self, sims_info_dict: dict):
         """
@@ -256,6 +262,11 @@ def _and_filters(filter_dict: dict, file_dict: dict):
         file_value = None
         for curr_key in keys_list:
             file_value = file_dict.get(curr_key)
+
+            if isinstance(file_value, dict):
+                file_dict = file_value
+            else:
+                break
 
         if file_value != check_value:
             keep_config = False

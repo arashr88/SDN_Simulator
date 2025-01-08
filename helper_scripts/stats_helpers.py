@@ -49,7 +49,6 @@ class SimStats:
         self.topology = None
         self.iteration = None
 
-        # TODO: Make sure this isn't reset after multiple iterations
         self.train_data_list = list()
 
     @staticmethod
@@ -206,7 +205,7 @@ class SimStats:
 
     def _handle_iter_lists(self, sdn_data: object):
         for stat_key in sdn_data.stat_key_list:
-            # TODO: Eventually change this name (sdn_data)
+            # TODO: This name should be changed to 'sdn_data'
             curr_sdn_data = sdn_data.get_data(key=stat_key)
             if stat_key == 'xt_list':
                 # fixme
@@ -276,7 +275,6 @@ class SimStats:
                 if len(data_list) == 0:
                     mod_obj[modulation] = {'mean': None, 'std': None, 'min': None, 'max': None}
                 else:
-                    # TODO: Is this ever equal to one?
                     if len(data_list) == 1:
                         deviation = 0.0
                     else:
@@ -350,7 +348,7 @@ class SimStats:
         except ZeroDivisionError:
             return False
 
-        # TODO: Add to configuration file (ci percent, same as above)
+        # TODO: Add CI percent to configuration file
         if block_ci_percent <= 5:
             print(f"Confidence interval of {round(block_ci_percent, 2)}% reached. "
                   f"{self.iteration + 1}, ending and saving results for Erlang: {self.engine_props['erlang']}")

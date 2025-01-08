@@ -232,7 +232,7 @@ class SDNController:
             route_matrix = self.route_obj.route_props.paths_matrix
         else:
             route_matrix = force_route_matrix
-            # TODO: This is an inconsistency
+            # TODO: This is an inconsistency when forcing a modulation format
             self.route_obj.route_props.mod_formats_matrix = [force_mod_format]
             # fixme
             self.route_obj.route_props.weights_list = [0]

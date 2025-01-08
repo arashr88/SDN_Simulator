@@ -3,14 +3,11 @@ import copy
 import os
 
 
-# TODO: Update standards and guidelines to say we should use classes and the must end with 'Props' or 'Args'
 class PlotProps:
     """
     Properties used in the main plot_stats.py script.
     """
 
-    # TODO: Add commenting these to the standards and guidelines
-    # TODO: Also, double check standards and guidelines for the 'props' section
     def __init__(self):
         self.sims_info_dict = None  # Contains all necessary information for each simulation run to be plotted
         self.plot_dict = None  # Contains only information related to plotting for each simulation run
@@ -50,7 +47,8 @@ class PlotArgs:
         self.cong_block_list = []  # Percentage of blocking due to a congestion constraint
         self.holding_time = None  # Holding time for the simulation run
         self.cores_per_link = None  # Number of cores per link
-        self.c_band = None  # Spectral slots per core
+        # TODO: Does not support all bands
+        self.c_band = None  # Spectral slots per core for the c-band
         self.learn_rate = None  # For artificial intelligence (AI), learning rate used if any
         self.discount_factor = None  # For AI, discount factor used if any
 

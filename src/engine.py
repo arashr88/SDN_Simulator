@@ -52,12 +52,11 @@ class Engine:
                 "is_sliced": sdn_props.is_sliced,
                 "was_routed": sdn_props.was_routed,
                 "core_list": sdn_props.core_list,
+                "band": sdn_props.band_list,
                 "start_slot_list": sdn_props.start_slot_list,
                 "end_slot_list": sdn_props.end_slot_list,
                 "bandwidth_list": sdn_props.bandwidth_list,
                 "snr_cost": sdn_props.xt_list,
-                # TODO: Update
-                "band": sdn_props.band_list,
             }})
 
     def handle_arrival(self, curr_time: float, force_route_matrix: list = None, force_core: int = None,
@@ -73,7 +72,7 @@ class Engine:
         :param force_core: Force a certain core for allocation.
         """
         for req_key, req_value in self.reqs_dict[curr_time].items():
-            # TODO: This should be changed in reqs_dict eventually
+            # TODO: This should be changed in reqs_dict directly
             if req_key == 'mod_formats':
                 req_key = 'mod_formats_dict'
             self.sdn_obj.sdn_props.update_params(key=req_key, spectrum_key=None, spectrum_obj=None, value=req_value)
@@ -92,7 +91,7 @@ class Engine:
         :param curr_time: The arrival time of the request.
         """
         for req_key, req_value in self.reqs_dict[curr_time].items():
-            # TODO: This should be changed in reqs_dict eventually
+            # TODO: This should be changed in reqs_dict directly
             if req_key == 'mod_formats':
                 req_key = 'mod_formats_dict'
             self.sdn_obj.sdn_props.update_params(key=req_key, spectrum_key=None, spectrum_obj=None, value=req_value)
@@ -112,7 +111,8 @@ class Engine:
         self.net_spec_dict = {}
         self.topology.add_nodes_from(self.engine_props['topology_info']['nodes'])
 
-        # TODO: Improve this
+        # TODO: This list should be stored somewhere else, like an arguments script
+        self.engine_props['band_list'] = list()
         for band in ['c', 'l', 's', 'o', 'e']:
             try:
                 if self.engine_props[f'{band}_band']:
@@ -126,7 +126,7 @@ class Engine:
 
             cores_matrix = dict()
             for band in self.engine_props['band_list']:
-                # TODO: We might want to name it the same thing
+                # TODO: This variable name for bands changes and is not consistent
                 band_slots = self.engine_props[f'{band}_band']
                 cores_matrix[band] = np.zeros((link_data['fiber']['num_cores'], band_slots))
 
@@ -145,8 +145,7 @@ class Engine:
 
         :param seed: The seed to use for the random generation.
         """
-        # TODO: Needs to be a flag for artificial intelligence (especially RL) simulations
-        # seed = 0
+        # TODO: Add a flag for AI simulations which want to have a constant seed
         self.reqs_dict = get_requests(seed=seed, engine_props=self.engine_props)
         self.reqs_dict = dict(sorted(self.reqs_dict.items()))
 
