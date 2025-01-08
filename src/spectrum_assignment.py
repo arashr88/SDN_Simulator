@@ -298,8 +298,7 @@ class SpectrumAssignment:
             self.spectrum_props.block_reason = 'congestion'
             continue
 
-    def get_spectrum_dynamic_slicing(self, mod_format_list: list, slice_bandwidth: str = None,
-                                     path_index: int = None):  # pylint: disable=unused-argument
+    def get_spectrum_dynamic_slicing(self, mod_format_list: list, slice_bandwidth: str = None, path_index: int = None):  # pylint: disable=unused-argument
         """
         Controls the class, attempts to find an available spectrum.
 

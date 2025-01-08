@@ -52,8 +52,7 @@ class Engine:
                 "is_sliced": sdn_props.is_sliced,
                 "was_routed": sdn_props.was_routed,
                 "core_list": sdn_props.core_list,
-                # TODO: Update band variable for multi-band
-                "band": sdn_props.curr_band,
+                "band": sdn_props.band_list,
                 "start_slot_list": sdn_props.start_slot_list,
                 "end_slot_list": sdn_props.end_slot_list,
                 "bandwidth_list": sdn_props.bandwidth_list,
