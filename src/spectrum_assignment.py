@@ -24,6 +24,7 @@ class SpectrumAssignment:
         self.spec_help_obj = SpectrumHelpers(engine_props=self.engine_props, sdn_props=self.sdn_props,
                                              spectrum_props=self.spectrum_props)
 
+    # TODO: No longer supported and needs a test
     def _allocate_best_fit(self, channels_list: list):
         for channel_dict in channels_list:
             for start_index in channel_dict['channel']:
@@ -35,7 +36,6 @@ class SpectrumAssignment:
                     self.spec_help_obj.start_index = start_index
                     self.spec_help_obj.end_index = end_index
                     self.spec_help_obj.core_num = channel_dict['core']
-                    # TODO: This needs to be double checked to ensure the correct band is being used
                     self.spec_help_obj.curr_band = channel_dict['band']
                     self.spec_help_obj.check_other_links()
 
@@ -45,7 +45,6 @@ class SpectrumAssignment:
                     self.spectrum_props.end_slot = end_index + self.engine_props['guard_slots']
                     self.spectrum_props.end_slot = end_index
                     self.spectrum_props.core_num = channel_dict['core']
-                    # TODO: This needs to be double checked to ensure the correct band is being used
                     self.spectrum_props.curr_band = channel_dict['band']
                     return
 
@@ -299,7 +298,8 @@ class SpectrumAssignment:
             self.spectrum_props.block_reason = 'congestion'
             continue
 
-    def get_spectrum_dynamic_slicing(self, mod_format_list: list, slice_bandwidth: str = None, path_index: int = None):  # pylint: disable=unused-argument
+    def get_spectrum_dynamic_slicing(self, mod_format_list: list, slice_bandwidth: str = None,
+                                     path_index: int = None):  # pylint: disable=unused-argument
         """
         Controls the class, attempts to find an available spectrum.
 
