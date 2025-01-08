@@ -21,7 +21,6 @@ from arg_scripts.rl_args import RLProps, LOCAL_RL_COMMANDS_LIST, VALID_PATH_ALGO
 from arg_scripts.rl_args import VALID_SPECTRUM_ALGORITHMS, get_optuna_hyperparams
 
 
-# TODO: Update tests
 # TODO: No support for core or spectrum assignment
 # TODO: Does not support multi-band
 
@@ -262,6 +261,7 @@ class SimEnv(gym.Env):  # pylint: disable=abstract-method
         self.rl_props.destination = int(curr_req['destination'])
         self.rl_props.mock_sdn_dict = self.rl_help_obj.update_mock_sdn(curr_req=curr_req)
 
+        # TODO: This is for spectrum assignment, ignored return for now
         _ = self._handle_test_train_obs(curr_req=curr_req)
         slots_needed, source_obs, dest_obs, super_channels = self._get_spectrum_obs(curr_req=curr_req)
         obs_dict = {
